@@ -1,14 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import { Link, useLocation } from "wouter";
-import { Search, Sparkles, Network, Lightbulb, TrendingUp, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
+import { Search, Sparkles, Network, Lightbulb, TrendingUp, Users, Menu, X, ArrowRight } from "lucide-react";
+import OasisLogo from "../components/OasisLogo";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
-    // Starfield animation
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -21,45 +22,35 @@ export default function Landing() {
     canvas.width = width;
     canvas.height = height;
 
-    const stars: { x: number; y: number; z: number; size: number }[] = [];
-    const numStars = 400;
-
-    for (let i = 0; i < numStars; i++) {
+    const stars: { x: number; y: number; z: number }[] = [];
+    for (let i = 0; i < 350; i++) {
       stars.push({
         x: Math.random() * width - width / 2,
         y: Math.random() * height - height / 2,
         z: Math.random() * width,
-        size: Math.random() * 1.5,
       });
     }
 
     const draw = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+      ctx.fillStyle = "rgba(0,0,0,0.82)";
       ctx.fillRect(0, 0, width, height);
-
       const cx = width / 2;
       const cy = height / 2;
-
-      for (let i = 0; i < stars.length; i++) {
-        const star = stars[i];
-        star.z -= 0.5;
-
+      for (const star of stars) {
+        star.z -= 0.45;
         if (star.z <= 0) {
           star.x = Math.random() * width - cx;
           star.y = Math.random() * height - cy;
           star.z = width;
         }
-
         const x = cx + (star.x / star.z) * width;
         const y = cy + (star.y / star.z) * width;
-        const s = (1 - star.z / width) * 3;
-
-        ctx.fillStyle = "white";
+        const s = Math.max(0.2, (1 - star.z / width) * 2.5);
+        ctx.fillStyle = `rgba(255,255,255,${0.4 + (1 - star.z / width) * 0.6})`;
         ctx.beginPath();
         ctx.arc(x, y, s, 0, Math.PI * 2);
         ctx.fill();
       }
-
       animationFrameId = requestAnimationFrame(draw);
     };
 
@@ -71,9 +62,7 @@ export default function Landing() {
       canvas.width = width;
       canvas.height = height;
     };
-
     window.addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameId);
@@ -81,91 +70,145 @@ export default function Landing() {
   }, []);
 
   const modules = [
-    { icon: Search, label: "Semantic Search", href: "/search" },
-    { icon: Sparkles, label: "AI Copilot", href: "/copilot" },
-    { icon: Network, label: "Knowledge Graph", href: "/graph" },
-    { icon: Lightbulb, label: "Gap Discovery", href: "/gaps" },
-    { icon: TrendingUp, label: "Novelty Trends", href: "/trends" },
+    { icon: Search, label: "Semantic\nSearch", href: "/search" },
+    { icon: Sparkles, label: "AI\nCopilot", href: "/copilot" },
+    { icon: Network, label: "Knowledge\nGraph", href: "/graph" },
+    { icon: Lightbulb, label: "Gap\nDiscovery", href: "/gaps" },
+    { icon: TrendingUp, label: "Novelty\nTrends", href: "/trends" },
     { icon: Users, label: "Collaborate", href: "/collaborate" },
   ];
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLocation("/home");
+  };
+
   return (
-    <div className="min-h-screen w-full bg-black text-white overflow-hidden relative flex flex-col font-sans">
-      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-black/80 to-black z-0 pointer-events-none" />
-      
-      {/* Top Nav */}
-      <header className="relative z-10 flex items-center justify-between px-8 py-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 border-2 border-white rounded-full flex items-center justify-center">
-            <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+    <div className="min-h-screen w-full bg-black text-white overflow-x-hidden relative flex flex-col font-sans select-none">
+      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70 z-0 pointer-events-none" />
+
+      {/* Nav */}
+      <header className="relative z-20 flex items-center justify-between px-6 py-5">
+        <div className="flex items-center gap-3">
+          <OasisLogo size={36} color="white" />
+          <div className="leading-none">
+            <div className="font-bold tracking-[0.2em] text-sm">OASIS</div>
+            <div className="text-[10px] tracking-[0.25em] text-neutral-400 font-medium">RESEARCH</div>
           </div>
-          <span className="font-bold tracking-widest text-sm">OASIS RESEARCH</span>
         </div>
-        <Button variant="ghost" className="text-white hover:bg-white/10" onClick={() => setLocation("/search")}>
-          Launch App
-        </Button>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="p-2 text-white hover:text-neutral-300 transition-colors"
+        >
+          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+        {menuOpen && (
+          <div className="absolute top-16 right-4 w-56 bg-neutral-900/95 backdrop-blur border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl z-50">
+            {modules.map((m) => (
+              <button
+                key={m.href}
+                onClick={() => { setLocation(m.href); setMenuOpen(false); }}
+                className="w-full text-left px-5 py-3 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
+              >
+                {m.label.replace("\n", " ")}
+              </button>
+            ))}
+            <div className="border-t border-neutral-800 mt-1" />
+            <button
+              onClick={() => { setLocation("/home"); setMenuOpen(false); }}
+              className="w-full text-left px-5 py-3 text-sm text-blue-400 hover:bg-neutral-800 transition-colors font-medium"
+            >
+              Launch App →
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Hero */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 -mt-20">
-        <div className="inline-flex items-center space-x-2 bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-full px-4 py-1.5 mb-8">
-          <div className="w-2 h-2 rounded-full bg-blue-500" />
-          <span className="text-sm font-medium tracking-wide text-neutral-300">AI-Powered Research Intelligence</span>
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-serif mb-6 leading-[1.1] font-medium text-center">
-          Navigate the World of Research.<br />
-          <span className="text-neutral-500">Discover What Matters.</span>
-        </h1>
-        
-        <p className="text-lg md:text-xl text-neutral-400 mb-12 max-w-2xl text-center">
-          The operating system for modern research. Navigate 100M+ papers, discover gaps, and stay ahead of emerging science.
-        </p>
-        
-        <div className="w-full max-w-2xl bg-neutral-900/60 backdrop-blur-md border border-neutral-700 rounded-2xl p-2 flex shadow-2xl">
-          <div className="pl-4 flex items-center justify-center text-neutral-400">
-            <Search className="w-5 h-5" />
-          </div>
-          <input 
-            type="text" 
-            placeholder="Search papers, concepts, or ask a question..." 
-            className="flex-1 bg-transparent border-none text-white px-4 py-4 outline-none placeholder:text-neutral-500 text-lg"
-          />
-          <Button onClick={() => setLocation("/search")} size="lg" className="bg-white text-black hover:bg-neutral-200 rounded-xl px-8 h-auto font-medium">
-            Start Research
-          </Button>
+      <main className="relative z-10 flex-1 flex flex-col px-6 pt-12 pb-8">
+        <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur border border-white/10 rounded-full px-4 py-1.5 mb-8 self-start">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+          <span className="text-xs font-medium tracking-wider text-neutral-300">AI-Powered Research Intelligence</span>
         </div>
 
-        <div className="mt-20 w-full max-w-5xl">
-          <p className="text-center text-sm text-neutral-500 font-medium tracking-widest uppercase mb-8">Powerful Tools for Breakthrough Research</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {modules.map((mod, i) => {
-              const Icon = mod.icon;
-              return (
-                <div key={i} onClick={() => setLocation(mod.href)} className="flex flex-col items-center p-6 bg-neutral-900/40 border border-neutral-800 rounded-2xl hover:bg-neutral-800 transition-colors cursor-pointer group">
-                  <Icon className="w-8 h-8 mb-4 text-neutral-400 group-hover:text-white transition-colors" />
-                  <span className="text-sm font-medium text-center">{mod.label}</span>
-                </div>
-              );
-            })}
-          </div>
+        <h1 className="text-[clamp(2.4rem,8vw,5.5rem)] font-serif font-medium leading-[1.05] mb-4 max-w-5xl">
+          Navigate the<br />
+          World of Research.<br />
+          <span className="text-neutral-500">Discover What Matters.</span>
+        </h1>
+
+        <p className="text-neutral-400 text-base md:text-lg mb-3 max-w-lg leading-relaxed">
+          OASIS Research helps researchers discover, analyze, and synthesize scientific knowledge across 100M+ papers.
+        </p>
+
+        {/* Search bar */}
+        <form onSubmit={handleSearch} className="mt-6 w-full max-w-xl flex items-center bg-white/8 backdrop-blur border border-white/20 rounded-2xl overflow-hidden shadow-2xl">
+          <Search className="ml-5 w-5 h-5 text-neutral-400 flex-shrink-0" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            type="text"
+            placeholder="Search 100M+ papers, concepts, methods, datasets..."
+            className="flex-1 bg-transparent px-4 py-4 text-white placeholder:text-neutral-500 text-sm outline-none"
+          />
+          <button
+            type="submit"
+            className="m-1.5 bg-white text-black font-semibold text-sm px-5 py-3 rounded-xl hover:bg-neutral-100 transition-colors flex items-center gap-2 flex-shrink-0"
+          >
+            Start Research <ArrowRight className="w-4 h-4" />
+          </button>
+        </form>
+
+        {/* Module icons */}
+        <div className="mt-16 grid grid-cols-3 md:grid-cols-6 gap-3 max-w-2xl">
+          {modules.map((mod) => {
+            const Icon = mod.icon;
+            return (
+              <button
+                key={mod.href}
+                onClick={() => setLocation(mod.href)}
+                className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/25 transition-all group"
+              >
+                <Icon className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
+                <span className="text-[11px] text-neutral-400 group-hover:text-white font-medium text-center leading-tight whitespace-pre-line transition-colors">
+                  {mod.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </main>
 
-      {/* Footer / Logos */}
-      <footer className="relative z-10 py-12 border-t border-neutral-900 bg-black/50">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col items-center">
-          <p className="text-sm text-neutral-600 mb-8 uppercase tracking-widest">Trusted by researchers at</p>
-          <div className="flex flex-wrap justify-center gap-12 items-center opacity-50 grayscale">
-            <span className="text-xl font-bold font-serif">MIT</span>
-            <span className="text-xl font-bold font-serif">Stanford</span>
-            <span className="text-xl font-bold font-serif">Harvard</span>
-            <span className="text-xl font-bold font-sans">Google DeepMind</span>
-            <span className="text-xl font-bold font-sans">NASA</span>
-          </div>
+      {/* Trusted by */}
+      <section className="relative z-10 border-t border-white/5 py-10 px-6 bg-black/40">
+        <p className="text-center text-xs text-neutral-600 uppercase tracking-widest mb-6 font-medium">
+          Trusted by leading institutions
+        </p>
+        <div className="flex flex-wrap justify-center gap-8 md:gap-14 items-center opacity-40">
+          {["MIT", "Stanford", "Harvard", "Google DeepMind", "NASA"].map((name) => (
+            <span key={name} className="text-white font-bold text-sm md:text-base tracking-wide">{name}</span>
+          ))}
         </div>
-      </footer>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative z-10 bg-black py-16 px-6 text-center">
+        <h2 className="text-2xl md:text-4xl font-serif font-medium mb-4">
+          Find the Next Breakthrough<br />Before Everyone Else
+        </h2>
+        <p className="text-neutral-400 mb-8 text-sm md:text-base max-w-md mx-auto">
+          Join thousands of researchers already accelerating their discoveries with OASIS.
+        </p>
+        <button
+          onClick={() => setLocation("/home")}
+          className="inline-flex items-center gap-2 bg-white text-black font-semibold px-8 py-4 rounded-2xl hover:bg-neutral-100 transition-colors text-sm"
+        >
+          Get Started for Free <ArrowRight className="w-4 h-4" />
+        </button>
+        <p className="text-neutral-600 text-xs mt-4">No credit card required</p>
+        <p className="text-neutral-700 text-xs mt-6">oasisresearch.ai</p>
+      </section>
     </div>
   );
 }

@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import Landing from "./pages/Landing";
+import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Copilot from "./pages/Copilot";
 import Graph from "./pages/Graph";
@@ -17,18 +18,11 @@ import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
 
-function ThemeProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // Add dark mode by default
-    document.documentElement.classList.add("dark");
-  }, []);
-  return <>{children}</>;
-}
-
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/home" component={Home} />
       <Route path="/search" component={Search} />
       <Route path="/copilot" component={Copilot} />
       <Route path="/graph" component={Graph} />
@@ -45,14 +39,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </ThemeProvider>
+      <TooltipProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <Router />
+        </WouterRouter>
+        <Toaster />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
