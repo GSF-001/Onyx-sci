@@ -1,0 +1,3446 @@
+# ResearchOS: Complete Technical Blueprint
+
+---
+
+## EXECUTIVE SUMMARY
+
+ResearchOS is a unified research intelligence platform that combines literature discovery, knowledge management, research gap identification, and AI-powered research assistance. By integrating capabilities from Sci-Hub, Google Scholar, Semantic Scholar, ResearchRabbit, Connected Papers, Mendeley, Notion, Obsidian, and ChatGPT into a single cohesive system, ResearchOS reduces academic research effort by 80% through automation, intelligent synthesis, and predictive insights.
+
+**Core Value Proposition:**
+- Single unified research workspace (vs. 8-10 fragmented tools)
+- AI-powered research gap discovery (eliminate manual literature review)
+- Real-time novelty scoring (identify high-impact research opportunities)
+- Collaborative knowledge graphs (share insights across teams)
+- Compliance-aware paper access (legal, auditable, transparent)
+
+---
+
+# PART 1: PRODUCT ARCHITECTURE
+
+## 1.1 Product Vision
+
+### Strategic Positioning
+ResearchOS is the operating system for modern research—a single, intelligent platform where researchers spend 80% less time finding papers, understanding context, identifying gaps, and synthesizing knowledge.
+
+**Time Allocation Transformation:**
+- Before: 40% finding papers → 5% (AI-powered discovery)
+- Before: 30% understanding context → 10% (AI summarization + graph)
+- Before: 20% identifying gaps → 5% (gap engine)
+- Before: 10% synthesis → 80% (deep creative research)
+
+### Market Opportunity
+- **TAM:** 50M+ researchers globally (academia, pharma, biotech, enterprise R&D)
+- **SAM:** 5M+ researchers in high-value sectors (biotech, pharma, AI/ML, materials science)
+- **SOM Year 1:** 10K researchers (universities + biotech firms)
+
+### Core Thesis
+Academic research is fundamentally broken as a workflow. Researchers use 8-10 disconnected tools, each with different data, different UIs, and different search paradigms. This fragmentation creates:
+- 40% time waste on tool-switching and duplicate effort
+- Information gaps and blind spots
+- Inability to identify emerging research trends
+- Siloed knowledge within institutions
+
+ResearchOS solves this by creating a **single, intelligent research nervous system**.
+
+---
+
+## 1.2 User Types
+
+### Primary Users
+
+#### 1. **PhD Candidates & Postdocs**
+- **Pain Points:** Literature review takes 3-6 months; hard to identify research gaps; limited funding visibility
+- **Needs:** Comprehensive paper discovery, automated summarization, trend analysis, collaboration tools
+- **Willingness to Pay:** Medium ($30-50/month as students, $100/month postdocs)
+- **Adoption Lever:** Free tier for students + university partnerships
+
+#### 2. **Research Scientists (Industry)**
+- **Pain Points:** Staying ahead of rapidly evolving fields; competitive intelligence; cross-disciplinary insights
+- **Needs:** Real-time trend detection, novelty scoring, citation impact tracking, team collaboration
+- **Willingness to Pay:** High ($500-1000/month per researcher; bulk discounts for teams)
+- **Adoption Lever:** Pharma, biotech, materials science research teams
+
+#### 3. **Research Managers / Program Officers**
+- **Pain Points:** Portfolio analysis, identifying high-risk/high-reward projects, detecting research gaps at scale
+- **Needs:** Batch analytics, competitive landscape, impact scoring, strategic planning tools
+- **Willingness to Pay:** Very High ($2000-5000/month + enterprise contracts)
+- **Adoption Lever:** Government labs, pharma research leadership, VC science teams
+
+#### 4. **Librarians & Research Support Teams**
+- **Pain Points:** Managing research access, handling complex queries, compliance tracking
+- **Needs:** Institutional management tools, usage analytics, compliance reporting, integration with institutional systems
+- **Willingness to Pay:** High (via institutional licenses, $10K-100K/year)
+- **Adoption Lever:** University partnerships, consortium licensing
+
+#### 5. **Science Policy & Intelligence Analysts**
+- **Pain Points:** Understanding research trends, identifying emerging threats/opportunities, monitoring competitor research
+- **Needs:** Large-scale trend analysis, institutional mapping, predictive research signals
+- **Willingness to Pay:** Very High (government, NGO contracts)
+- **Adoption Lever:** Government, intelligence agencies, policy think tanks
+
+### Secondary Users
+
+#### 6. **Science Journalists & Science Communicators**
+- **Pain Points:** Finding stories, understanding research context, fact-checking claims
+- **Needs:** Trend detection, expert identification, context retrieval
+- **Willingness to Pay:** Low-Medium ($50-200/month)
+
+#### 7. **Science Writers & Grant Proposal Consultants**
+- **Pain Points:** Evidence gathering, trend identification, competitive gap analysis
+- **Needs:** Research synthesis, trend reports, citation intelligence
+- **Willingness to Pay:** Medium-High ($200-500/month)
+
+#### 8. **Venture Capitalists (Science/DeepTech Focused)**
+- **Pain Points:** Understanding research landscapes, identifying founding teams, competitive positioning
+- **Needs:** Researcher mapping, publication tracking, team network analysis
+- **Willingness to Pay:** Very High (premium tier, $5000+/month)
+
+---
+
+## 1.3 User Journeys
+
+### Journey 1: PhD Literature Review (2-6 Month Compression to 2-3 Weeks)
+
+**Current State (Without ResearchOS):**
+```
+Week 1-2:   Search Google Scholar, Pubmed, arXiv manually
+            Save 500+ papers to various tools
+            Manually sort and tag
+            
+Week 2-4:   Read abstracts, PDFs, take notes in Notion
+            Create manual citation network in Excel
+            Track gaps in understanding
+            
+Week 4-8:   Conduct secondary searches for gaps
+            Read 50-100 papers deeply
+            Synthesize findings in Word doc
+            
+Week 8+:    Missing key papers, backtrack, re-search
+            Find contradictions in manual notes
+            Redo synthesis
+```
+
+**New State (With ResearchOS):**
+```
+Day 1:      Enter research question: "Deep learning for drug discovery"
+            ResearchOS returns 5000+ papers with automatic ranking
+            AI generates landscape analysis: key subtopics, researcher network, 
+            research gaps, emerging trends
+            
+Day 1-2:    AI highlights 30 "must-read" papers (based on citation network + 
+            novelty + relevance)
+            One-click summaries, key claims extracted, contradictions flagged
+            AI generates "5 Key Gaps" in current research
+            
+Day 2-7:    Deep dive on gap areas
+            AI generates follow-up searches: "Who's working on this gap?"
+            "What datasets are available?" "What techniques are emerging?"
+            
+Week 2:     AI generates complete literature review draft with 
+            citations, gaps analysis, future directions
+            Researcher adds original insights, AI suggests relevant sections
+            
+Week 2-3:   Refine thesis based on landscape analysis
+            AI identifies which gaps align with advisor's expertise + 
+            available resources
+```
+
+**Key Workflows:**
+1. Natural language research question → Comprehensive landscape
+2. Paper collection → AI-assisted categorization
+3. Gap identification → Prioritized research directions
+4. Synthesis → Draft literature review with AI assistance
+5. Collaboration → Share findings with advisor/lab
+
+---
+
+### Journey 2: Industry Research Scientist (Competitive Intelligence + Novelty Detection)
+
+**Current State (Without ResearchOS):**
+```
+Weekly:     Manual searches on 5-10 keywords across 3-4 databases
+            Subscribe to email alerts (noisy, many false positives)
+            Read 20-30 papers/week manually
+            Track trends in spreadsheet
+            
+Monthly:    Prepare team briefing on emerging trends
+            Manual competitive analysis: "Is anyone else doing this?"
+            Send Slack messages with interesting papers
+            
+Quarterly:  Present landscape analysis to leadership
+            Recreate from scratch each time (no systematic tracking)
+```
+
+**New State (With ResearchOS):**
+```
+Setup (One-time):
+            Define research areas: "Drug delivery", "CRISPR", "AI for drug discovery"
+            Define competitors: [list 20+ orgs]
+            Set novelty threshold: only show papers in top 10% novelty
+            
+Daily:      AI recommends 5-10 "high signal" papers
+            Breakdown: 2 novelty, 2 competitive intel, 2 trend shifts, 2 
+            applied-to-your-area
+            One-click summaries, key claims extracted
+            Flag for team Slack channel if relevant
+            
+Weekly:     ResearchOS generates automated briefing:
+            - Emerging techniques in your domain (with trend velocity)
+            - Competitor activity (who published, who filed patents)
+            - Research gaps you could own
+            - Predicted next-year trends
+            
+Monthly:    Research trends report (auto-generated, fully cited)
+            Team can collaborate on annotations
+            Export to Powerpoint for leadership
+            
+Quarterly:  Strategic landscape report: 
+            Where is the field going?
+            What's the competitive positioning?
+            Where are the unowned gaps?
+```
+
+**Key Workflows:**
+1. Research area setup → Continuous monitoring
+2. Daily novelty detection → High-signal paper triage
+3. Competitive tracking → Automated competitor monitoring
+4. Trend synthesis → Weekly briefing generation
+5. Impact assessment → Strategic planning input
+
+---
+
+### Journey 3: Research Program Officer (Portfolio Analysis + Strategic Planning)
+
+**Current State (Without ResearchOS):**
+```
+Quarterly:  Manually review 50-100 active projects
+            Search for gaps in portfolio
+            Track which areas are "hot"
+            Search for emerging investigators
+            Create presentation manually
+            
+Annual:     Portfolio review (1-2 months of work)
+            Identify strategic priorities
+            Fund new initiatives
+            Analysis lost after presentation
+```
+
+**New State (With ResearchOS):**
+```
+Setup:      Input portfolio: [50-100 projects + researchers]
+            Define strategic priorities
+            Set monitoring parameters
+            
+Real-time:  ResearchOS maps entire portfolio to research landscape
+            Identifies gaps: "Where are funding opportunities?"
+            Shows emerging subfields where you're under-invested
+            Flags when your investigators hit novelty peaks
+            
+Monthly:    Portfolio health dashboard:
+            - Citation impact trends
+            - Novelty trends in your areas
+            - Emerging researcher activity
+            - Gap analysis: where should we fund?
+            - Competitive threat analysis
+            
+Quarterly:  Strategic briefing (auto-generated):
+            Portfolio vs. landscape comparison
+            Where are the strategic gaps?
+            Recommended funding directions
+            Emerging teams to watch
+            
+Annual:     Complete portfolio analysis with strategic recommendations
+            Done in 1 day instead of 2 months
+```
+
+**Key Workflows:**
+1. Portfolio ingestion → Landscape mapping
+2. Real-time monitoring → Strategic alert system
+3. Gap analysis → Funding opportunity identification
+4. Competitive analysis → Threat detection
+5. Strategic reporting → Leadership decision support
+
+---
+
+### Journey 4: Corporate Strategy & Venture Capital (Tech Scouting + Deal Flow)
+
+**Current State (Without ResearchOS):**
+```
+Ongoing:    Manual monitoring of research communities
+            Subscribe to conference alerts, email lists
+            Hire research analysts to track papers
+            Takes 6+ months to spot emerging tech trends
+            Deal sourcing is slow and reactive
+```
+
+**New State (With ResearchOS):**
+```
+Setup:      Define areas of interest
+            Set growth rate thresholds for investment
+            Define investor profile (stage, check size, tech)
+            
+Real-time:  ResearchOS identifies emerging research clusters
+            "New technique gaining traction in: [field]"
+            Maps researcher networks (who's leading this?)
+            Identifies founding team potential
+            
+Weekly:     Deal flow report:
+            Emerging technologies hitting inflection points
+            Researcher network analysis: "Who will found companies?"
+            Patent filing trends (signals commercialization)
+            Competitive landscape
+            
+Deal Sourcing:
+            See researcher → View publication record
+            View patent filings → View company founding
+            Pre-seed opportunity identification
+            Strategic partnership opportunities
+```
+
+**Key Workflows:**
+1. Research trend detection → Investment opportunity identification
+2. Researcher mapping → Team potential assessment
+3. Technology maturity analysis → Commercial readiness scoring
+4. Competitive analysis → Market opportunity sizing
+5. Deal sourcing → Pipeline generation
+
+---
+
+## 1.4 Core Workflows
+
+### Workflow A: Paper Discovery & Triage
+
+**Input:** Research question / keywords / researcher profile
+**Output:** Ranked, categorized, contextualized paper list
+
+**Steps:**
+1. User enters research question (natural language or keywords)
+2. System queries multiple sources (arXiv, PubMed, bioRxiv, proprietary indices)
+3. Deduplication engine merges results across sources
+4. Ranking engine scores by: relevance, novelty, impact, recency, network position
+5. AI generates category labels (automatically groups into themes)
+6. System presents: ranked list, landscape visualization, gap analysis
+
+**Success Metrics:**
+- Time to find first "must-read" paper: <5 min
+- Comprehensive coverage: >95% of relevant papers included
+- False positive rate: <5% (irrelevant papers in top 10)
+
+---
+
+### Workflow B: Paper Understanding & Synthesis
+
+**Input:** Single paper or collection of papers
+**Output:** Structured understanding, cross-paper synthesis, gap analysis
+
+**Steps:**
+1. User selects paper(s)
+2. System extracts: abstract, figures, tables, methodology, results, claims, limitations
+3. AI generates: structured summary, key claims, methodology overview, limitations, gaps
+4. Cross-paper mode: AI identifies: contradictions, complementary findings, gaps between papers
+5. Citation network: Shows how selected papers connect to the field
+6. Concept mapping: Extracts key concepts and visualizes relationships
+
+**Success Metrics:**
+- Summary accuracy: >90% of key claims captured
+- Contradiction detection: >80% sensitivity, <10% false positive
+- Time to understand paper: 5 min vs. 30 min manual
+
+---
+
+### Workflow C: Research Gap Identification
+
+**Input:** Research landscape (collection of papers or research area)
+**Output:** Prioritized list of research gaps with impact/difficulty scoring
+
+**Steps:**
+1. System ingests papers/patents in domain
+2. Gap engine analyzes: what questions are NOT being asked?
+3. Scoring: impact potential, difficulty, resource requirements, team capability alignment
+4. Visualization: Gap landscape showing potential, competitiveness, resource needs
+5. Trend analysis: Which gaps are emerging vs. saturating?
+6. Opportunity scoring: Which gaps have best risk/reward profile?
+
+**Success Metrics:**
+- Gap identification: >80% of expert-identified gaps detected
+- Quality of rankings: >90% correlation with researcher assessment
+- Actionability: >70% of gaps are feasible research projects
+
+---
+
+### Workflow D: Continuous Monitoring & Alerting
+
+**Input:** User-defined research areas, competitor lists, innovation keywords
+**Output:** High-signal alerts, weekly briefing, trend analysis
+
+**Steps:**
+1. System monitors new papers, patents, preprints daily
+2. For each new content: scoring for relevance, novelty, competitive interest
+3. Alert generation: Surfaces only top 1% of new content (high signal)
+4. Weekly digest: Aggregates 7 days of activity with synthesis
+5. Trend analysis: Emerging topics, techniques, teams
+6. Competitive alerts: Competitor activity tracking
+
+**Success Metrics:**
+- Alert signal-to-noise ratio: >10:1 (>90% of alerts are actionable)
+- Coverage: >99% of relevant new papers captured
+- User satisfaction: >80% of users find alerts valuable
+
+---
+
+### Workflow E: Collaborative Research & Team Sharing
+
+**Input:** Research findings, papers, gaps, insights from individual researchers
+**Output:** Team-shared knowledge graph, collaborative workspace
+
+**Steps:**
+1. Researcher creates discovery/collection/insight
+2. Shares with team/lab
+3. Team members annotate, add insights, cross-reference
+4. System detects connections across team members' work
+5. Collaborative notes/synthesis
+6. Team briefing generation from collaborative workspace
+
+**Success Metrics:**
+- Adoption across 3+ team members: >70% of teams
+- Knowledge reuse: >50% of new discoveries reference existing team knowledge
+- Time to team alignment: <1 day vs. <1 week manual
+
+---
+
+### Workflow F: Strategic Research Planning
+
+**Input:** Research portfolio, strategic priorities, resource constraints
+**Output:** Recommended research directions, resource allocation, competitive analysis
+
+**Steps:**
+1. Program officer inputs: current projects, team capabilities, funding constraints
+2. System maps against global research landscape
+3. Gap analysis: where are portfolio gaps relative to landscape?
+4. Opportunity scoring: which gaps have best funding potential?
+5. Competitive analysis: who else is funding these areas?
+6. Strategic recommendations: where to place next round of funding?
+7. Risk assessment: which areas are becoming saturated?
+
+**Success Metrics:**
+- Strategic gap identification: >85% of expert-identified portfolio gaps
+- Opportunity ranking: >80% correlation with strategic value
+- Portfolio optimization: identifying 3-5 high-impact funding opportunities
+
+---
+
+## 1.5 Competitive Advantages
+
+### 1. **Unified Research Nervous System**
+- **What:** Single platform replacing 8-10 fragmented tools
+- **Why it matters:** 40% time savings from eliminating tool-switching
+- **Hard to replicate:** Requires deep integrations across literature sources, knowledge management, AI, and collaboration
+- **Barrier:** Network effects (more tools integrated = more valuable; creates high switching cost)
+
+### 2. **AI-Powered Research Gap Discovery Engine**
+- **What:** Automated identification of under-researched areas with high impact potential
+- **Why it matters:** Researchers spend 20% of time manually identifying gaps; engine reduces to 5%
+- **Hard to replicate:** Requires large research corpus + sophisticated semantic understanding + novelty scoring algorithms
+- **Barrier:** Data moat (more papers ingested = better gap detection)
+
+### 3. **Novelty Scoring & Trend Velocity Analysis**
+- **What:** Real-time assessment of research novelty, saturation, and trend direction
+- **Why it matters:** Helps researchers and investors identify inflection points before they're obvious
+- **Hard to replicate:** Requires continuous monitoring of global research corpus + advanced NLP + trend analysis algorithms
+- **Barrier:** Time-series data moat (requires 3+ years of trend data)
+
+### 4. **Semantic Research Knowledge Graph**
+- **What:** Multi-modal knowledge graph connecting papers, researchers, methods, datasets, results, and concepts
+- **Why it matters:** Enables cross-disciplinary insight discovery and connection-based navigation
+- **Hard to replicate:** Requires dense, high-quality entity extraction and relationship modeling at scale
+- **Barrier:** Data quality moat (manual curation + ML training)
+
+### 5. **Compliance-Aware Paper Access**
+- **What:** Legal, transparent, auditable access to research papers
+- **Why it matters:** Addresses sci-hub users' needs without legal risk
+- **Hard to replicate:** Requires licensing agreements, legal expertise, institutional relationships
+- **Barrier:** Strategic partnerships with publishers and institutions
+
+### 6. **Research-Optimized AI Copilot**
+- **What:** Context-aware AI assistant specifically trained for research workflows
+- **Why it matters:** General LLMs hallucinate; research copilot has domain-specific training and fact-checking
+- **Hard to replicate:** Requires domain-specific training data, research-specific evaluation, continuous refinement
+- **Barrier:** Domain expertise moat + proprietary training data
+
+### 7. **Institutional Research Portfolio Management**
+- **What:** Tools for research leaders to manage portfolios at scale with AI-powered strategic analysis
+- **Why it matters:** Enables data-driven strategic research planning
+- **Hard to replicate:** Requires deep understanding of research management workflows + AI capabilities
+- **Barrier:** Enterprise sales complexity and domain expertise
+
+### 8. **Real-Time Competitive Intelligence**
+- **What:** Automated monitoring of competitor research, patent filings, team formations
+- **Why it matters:** Researchers and VCs can spot market opportunities before competitors
+- **Hard to replicate:** Requires continuous monitoring, integration with patent databases, sophisticated entity recognition
+- **Barrier:** Data integration complexity + real-time processing at scale
+
+---
+
+# PART 2: SYSTEM ARCHITECTURE
+
+## 2.1 High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER LAYER                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Web App (React)  │  Mobile App (React Native)  │  API Clients  │
+└────────────┬──────────────────────────────────────────────┬──────┘
+             │                                              │
+┌────────────▼──────────────────────────────────────────────▼──────┐
+│                    API GATEWAY LAYER                             │
+├──────────────────────────────────────────────────────────────────┤
+│  GraphQL Gateway  │  REST API Gateway  │  WebSocket Gateway      │
+│  (Auth, Rate Limit, Routing)                                     │
+└────────────┬──────────────────────────────────────────────┬──────┘
+             │                                              │
+┌────────────▼──────────────────────────────────────────────▼──────┐
+│                  MICROSERVICE LAYER                              │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─────────────────┐  ┌──────────────────┐  ┌──────────────┐   │
+│  │ Auth Service    │  │ Discovery Service│  │ Gap Engine   │   │
+│  │ - Auth/z        │  │ - Search         │  │ - Analysis   │   │
+│  │ - Session Mgmt  │  │ - Ranking        │  │ - Scoring    │   │
+│  │ - MFA           │  │ - Dedup          │  │              │   │
+│  └─────────────────┘  └──────────────────┘  └──────────────┘   │
+│                                                                  │
+│  ┌─────────────────┐  ┌──────────────────┐  ┌──────────────┐   │
+│  │ Knowledge Graph │  │ Novelty Engine   │  │ AI Copilot   │   │
+│  │ Service         │  │ - Scoring        │  │ - RAG        │   │
+│  │ - Graph Queries │  │ - Trend Analysis │  │ - Synthesis  │   │
+│  │ - Updates       │  │                  │  │ - Context    │   │
+│  └─────────────────┘  └──────────────────┘  └──────────────┘   │
+│                                                                  │
+│  ┌─────────────────┐  ┌──────────────────┐  ┌──────────────┐   │
+│  │ Paper Service   │  │ Collaboration    │  │ Export Svc   │   │
+│  │ - PDF mgmt      │  │ Service          │  │ - Citations  │   │
+│  │ - Extraction    │  │ - Sharing        │  │ - Reports    │   │
+│  │ - Metadata      │  │ - Annotations    │  │ - Sync       │   │
+│  └─────────────────┘  └──────────────────┘  └──────────────┘   │
+│                                                                  │
+│  ┌─────────────────┐  ┌──────────────────┐  ┌──────────────┐   │
+│  │ User Service    │  │ Compliance Svc   │  │ Analytics    │   │
+│  │ - Profiles      │  │ - Access Control │  │ - Tracking   │   │
+│  │ - Preferences   │  │ - Audit Logs     │  │ - Reporting  │   │
+│  │ - Organization  │  │ - Rights Mgmt    │  │              │   │
+│  └─────────────────┘  └──────────────────┘  └──────────────┘   │
+│                                                                  │
+└────────────┬──────────────────────────────────────────────┬──────┘
+             │                                              │
+┌────────────▼──────────────────────────────────────────────▼──────┐
+│                   DATA & PROCESSING LAYER                        │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │         Event Stream (Kafka / Redis Streams)             │ │
+│  │  (Paper ingestion, user actions, search queries, etc.)   │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │       Async Processing Workers                           │ │
+│  │  (Paper extraction, graph updates, novelty scoring,      │ │
+│  │   trend analysis, AI pipeline execution)                 │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐ │
+│  │  PostgreSQL  │  │   Qdrant     │  │  Redis Cache & Queue │ │
+│  │  (Relational)│  │  (Vector DB) │  │  (Session, Cache)    │ │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘ │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │  S3 / Object Storage (PDFs, Extracted Data, Exports)   │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                                                                  │
+└────────────┬──────────────────────────────────────────────┬──────┘
+             │                                              │
+┌────────────▼──────────────────────────────────────────────▼──────┐
+│              EXTERNAL INTEGRATIONS & SOURCES                     │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Paper Sources:  arXiv, PubMed, bioRxiv, ChemRxiv, etc.        │
+│  Data Sources:   Google Scholar, Semantic Scholar, S2ORC       │
+│  Patent Sources: USPTO, WIPO, Google Patents                   │
+│  ML Models:      OpenAI GPT-4, Embedding Models, Ranking Models │
+│  Auth Providers: OAuth (Google, GitHub, ORCID)                  │
+│  SSO:            Okta, Azure AD (Enterprise)                    │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│            OBSERVABILITY & INFRASTRUCTURE                        │
+├──────────────────────────────────────────────────────────────────┤
+│  Logging:     ELK Stack / Datadog                                │
+│  Monitoring:  Prometheus + Grafana                               │
+│  Tracing:     Jaeger / Datadog APM                               │
+│  Alerting:    PagerDuty / Opsgenie                               │
+│  CI/CD:       GitHub Actions / GitLab CI                         │
+│  Infrastructure: Kubernetes (EKS/GKE), Terraform                │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.2 Service Architecture
+
+### Core Services (14 Total)
+
+#### **1. Authentication & Authorization Service**
+
+**Responsibilities:**
+- User registration, login, password management
+- MFA (TOTP, SMS, email-based)
+- OAuth integration (Google, GitHub, ORCID)
+- SSO integration (Okta, Azure AD)
+- Session management
+- Permission/role-based access control (RBAC)
+- API key management for programmatic access
+- Audit logging for all auth events
+
+**Dependencies:** PostgreSQL, Redis, Secrets Manager
+**External:** OAuth providers, SSO providers, email service
+
+**Key Entities:**
+- Users, Roles, Permissions
+- Sessions, API Keys
+- OAuth connections, SSO configurations
+- Audit logs
+
+---
+
+#### **2. Discovery Service**
+
+**Responsibilities:**
+- Search paper indices (full-text, semantic, hybrid)
+- Query multiple paper sources (arXiv, PubMed, bioRxiv, etc.)
+- Result deduplication
+- Initial ranking (relevance, recency, citations)
+- Result pagination and caching
+- Suggest related searches / autocomplete
+- Save searches
+
+**Dependencies:** Qdrant (vector search), PostgreSQL (metadata), Redis (cache)
+**External:** arXiv API, PubMed API, bioRxiv API, Elasticsearch
+
+**Key Entities:**
+- SearchQueries, SearchResults, SavedSearches
+- PaperMetadata (indexed)
+
+**Performance Targets:**
+- <500ms for full-text search across 100M papers
+- <1000ms for semantic search (vector similarity)
+- <200ms for hybrid search (combined ranking)
+- <100 QPS capacity per instance (scale horizontally)
+
+---
+
+#### **3. Paper Service**
+
+**Responsibilities:**
+- Paper ingestion (metadata, PDFs, extracted content)
+- PDF storage and retrieval
+- PDF text extraction
+- Metadata normalization and deduplication
+- Figure and table extraction
+- Citation extraction from PDFs
+- Paper versioning (preprint → published → corrected)
+- Access rights management (legal/compliance)
+
+**Dependencies:** PostgreSQL, S3, PDF extraction library, NLP
+**External:** arXiv, PubMed, bioRxiv, CrossRef API
+
+**Key Entities:**
+- Papers, Versions, Metadata
+- PDFs (S3 references)
+- Extracted content (figures, tables, citations, text)
+- Access logs
+
+**Processing:**
+- Ingest 10,000 papers/day initially (scales to 100,000+/day)
+- Extract key content in <10 seconds per paper
+- Deduplicate across sources
+
+---
+
+#### **4. Knowledge Graph Service**
+
+**Responsibilities:**
+- Build and maintain semantic knowledge graph
+- Entity extraction (concepts, methods, datasets, people, organizations)
+- Relationship inference (conceptual, methodological, institutional)
+- Graph queries (shortest path, influence analysis, community detection)
+- Graph visualization data generation
+- Knowledge graph updates (incremental ingestion)
+- GraphQL interface for graph queries
+
+**Dependencies:** Neo4j or ClickHouse (graph DB), Python (graph algorithms)
+**External:** None (internal data only)
+
+**Key Entities:**
+- Concepts, Methods, Datasets, Researchers, Organizations
+- Papers (as nodes)
+- Relationships: cites, uses, develops, studies, contradicts, extends, etc.
+- Graph snapshots (for versioning/history)
+
+**Graph Size:**
+- 100M papers → ~1B entities (concepts, methods, datasets, researchers, orgs)
+- ~5B relationships
+- Requires 500GB+ storage at full scale
+
+---
+
+#### **5. Novelty Engine**
+
+**Responsibilities:**
+- Calculate novelty scores for papers (0-100)
+- Identify emerging topics vs. saturating topics
+- Trend velocity analysis (acceleration of publication rate)
+- Topic saturation modeling
+- Competitive intensity scoring
+- Predict future research trends
+- Generate novelty-based alerts
+
+**Dependencies:** PostgreSQL, time-series data, NLP embeddings
+**Algorithms:** Statistical trend analysis, topic modeling, semantic similarity
+
+**Key Entities:**
+- NoveltyScores (per paper, recalculated over time)
+- TopicTrends (publication rate, novelty trend over time)
+- CompetitiveIntensity (paper count by topic over time)
+- TrendPredictions
+
+**Scoring Model:**
+
+```
+NOVELTY_SCORE = (
+  0.3 * CONCEPTUAL_NOVELTY +       // New concepts introduced?
+  0.2 * METHODOLOGICAL_NOVELTY +   // New methods?
+  0.2 * EMPIRICAL_NOVELTY +        // New experimental results?
+  0.15 * SEMANTIC_DISTANCE +       // How far from existing work?
+  0.15 * TREND_VELOCITY             // Is this topic accelerating?
+) * (1 - SATURATION_DISCOUNT)
+```
+
+Where:
+- SATURATION_DISCOUNT = min(0.8, (papers_in_topic_last_year / median_historical_rate) ^ 0.5)
+- Accounts for field maturity
+
+---
+
+#### **6. Gap Analysis Engine**
+
+**Responsibilities:**
+- Identify research gaps at multiple levels:
+  - Topic-level gaps (understudied combinations of concepts)
+  - Methodological gaps (questions not approached with certain methods)
+  - Empirical gaps (predictions untested)
+  - Cross-disciplinary gaps (insights from field A not applied to field B)
+- Gap scoring (impact potential, difficulty, resource requirements)
+- Opportunity scoring for research teams
+- Gap lifecycle tracking (emerging vs. saturating)
+- Gap recommendations for research planning
+
+**Dependencies:** Knowledge graph, novelty engine, statistical analysis
+**Algorithms:** Set theory (uncovered concept combinations), semantic analysis
+
+**Key Entities:**
+- ResearchGaps, GapScores
+- GapOpportunities, GapRecommendations
+- GapLifecycle tracking
+
+**Gap Detection Algorithms:**
+
+```
+1. CONCEPT_COMBINATION_GAPS:
+   For each pair of concepts (C1, C2) in knowledge graph:
+     existing_papers = papers mentioning both C1 and C2
+     if existing_papers < threshold:
+       gap = CONCEPT_GAP(C1, C2)
+       score = IMPACT_SCORE(C1, C2, related_fields)
+
+2. METHODOLOGICAL_GAPS:
+   For each question Q and method M:
+     studied = papers studying Q with method M
+     if studied < threshold:
+       gap = METHOD_GAP(Q, M)
+       score = POTENTIAL_IMPACT(Q, M)
+
+3. CROSS_DISCIPLINARY_GAPS:
+   For each technique T in field F1:
+     relevant_to = fields where T could apply
+     if used_in = fields where T is already used:
+       unexplored = relevant_to - used_in
+       for field F2 in unexplored:
+         gap = XDISCIPLINARY_GAP(T, F2)
+         score = MARKET_POTENTIAL(T, F2)
+```
+
+---
+
+#### **7. AI Research Copilot Service**
+
+**Responsibilities:**
+- Research question answering with cited sources
+- Literature synthesis
+- Paper summarization
+- Methodology explanation
+- Results interpretation
+- Future directions suggestion
+- Cross-paper contradiction detection
+- Data extraction from papers (tables, figures)
+- Research hypothesis generation
+- Literature review draft generation
+
+**Dependencies:** LLM (GPT-4 or equivalent), embedding models, retrieval system, knowledge graph
+**External:** OpenAI API, Anthropic API, or self-hosted LLM
+
+**Key Entities:**
+- CopiLotSessions, CopiLotMessages
+- ContextRetrievals (for tracing RAG performance)
+- GeneratedSynthesis, GeneratedSummaries
+
+**Architecture:**
+- Multi-stage RAG pipeline (see section 2.6)
+- Fact-checking via knowledge graph
+- Citation tracking
+- Confidence scoring
+
+---
+
+#### **8. Collaboration Service**
+
+**Responsibilities:**
+- Team/lab management
+- Paper collection sharing
+- Research project collaboration
+- Real-time collaborative annotations
+- Comment threads on papers
+- Shared research notes (Notion-like)
+- Permissions management (view, edit, comment)
+- Activity tracking
+- Notification management
+
+**Dependencies:** PostgreSQL, Redis (real-time updates), WebSockets
+**External:** None
+
+**Key Entities:**
+- Teams, TeamMembers, TeamRoles
+- SharedCollections, SharedProjects
+- Annotations, Comments
+- ActivityLog, Notifications
+
+---
+
+#### **9. User Profile & Organization Service**
+
+**Responsibilities:**
+- User profile management
+- Research interests and expertise tracking
+- Institutional affiliation management
+- Organization/institution management
+- Researcher networks
+- Privacy settings
+- Notification preferences
+- Usage statistics
+
+**Dependencies:** PostgreSQL, Redis
+**External:** None
+
+**Key Entities:**
+- UserProfiles, ResearchInterests
+- Organizations, TeamMemberships
+- UserNetworks (followers, collaborators)
+- PrivacySettings, NotificationPreferences
+
+---
+
+#### **10. Compliance & Access Rights Service**
+
+**Responsibilities:**
+- Paper access rights management
+- DRM/watermarking (for compliance)
+- License tracking (publisher agreements)
+- GDPR compliance (user data requests)
+- HIPAA compliance (for biomedical data)
+- Audit logging
+- Access control enforcement
+- Regional content restrictions
+
+**Dependencies:** PostgreSQL, S3 (for DRM content), Audit logging
+**External:** Publisher APIs, legal frameworks
+
+**Key Entities:**
+- PaperAccessRights, Licenses
+- UserDataRequests, AuditLogs
+- RegionalRestrictions
+
+---
+
+#### **11. Analytics & Reporting Service**
+
+**Responsibilities:**
+- Track user behavior (searches, clicks, time spent)
+- Generate usage reports
+- Research trend analysis and reporting
+- Competitive intelligence reports
+- Portfolio analysis reports
+- Research impact tracking
+- Custom report generation
+- Export functionality
+
+**Dependencies:** PostgreSQL, Analytics database (ClickHouse or similar), Redis
+**External:** None
+
+**Key Entities:**
+- UserBehaviorEvents, SessionEvents
+- ResearchTrendReports, CompetitiveReports
+- PortfolioReports, CustomReports
+
+---
+
+#### **12. Export & Formatting Service**
+
+**Responsibilities:**
+- Generate citations (BibTeX, APA, MLA, Chicago, etc.)
+- Export collections to Zotero, Mendeley, EndNote format
+- Generate literature review documents (Word, PDF)
+- Create research reports
+- Generate bibliographies
+- Format research summaries
+- Create presentations (Powerpoint-compatible)
+- Schedule automated report generation
+
+**Dependencies:** PDF generation library, document generation library
+**External:** None
+
+**Key Entities:**
+- ExportJobs, ExportFormats
+- ScheduledReports, ReportTemplates
+
+---
+
+#### **13. Monitoring & Alerting Service**
+
+**Responsibilities:**
+- System health monitoring
+- Performance alerting
+- Error tracking and alerting
+- Scheduled alerts (daily/weekly briefings)
+- Custom alert rules
+- Notification delivery (email, Slack, in-app)
+- Alert acknowledgment and management
+
+**Dependencies:** PostgreSQL, notification service, monitoring infrastructure
+**External:** Slack API, email service, SMS service
+
+**Key Entities:**
+- AlertRules, AlertHistory
+- Notifications, UserPreferences
+- HealthChecks
+
+---
+
+#### **14. Integration & Webhooks Service**
+
+**Responsibilities:**
+- Manage integrations with external services
+- Webhook management and delivery
+- SSO provider integrations
+- OAuth provider integrations
+- Paper source integrations
+- Third-party app development support
+- API documentation and management
+
+**Dependencies:** PostgreSQL, HTTP client library
+**External:** Various third-party APIs
+
+**Key Entities:**
+- Integrations, WebhookEndpoints
+- WebhookEvents, WebhookDeliveries
+- ThirdPartyApps
+
+---
+
+## 2.3 Event Architecture
+
+### Event Stream (Kafka / Redis Streams)
+
+ResearchOS uses an event-driven architecture to decouple services and enable real-time processing.
+
+**Key Event Topics:**
+
+#### **1. Paper Events**
+```
+paper.created
+paper.updated
+paper.extracted (text extraction complete)
+paper.deduped (duplicate detected)
+paper.versioned (new version detected)
+paper.metadata_updated
+paper.cited_by
+paper.added_to_collection
+```
+
+#### **2. Search Events**
+```
+search.query_executed
+search.result_returned
+search.saved
+search.shared
+search.trending
+```
+
+#### **3. User Events**
+```
+user.registered
+user.profile_updated
+user.email_verified
+user.mfa_enabled
+user.logged_in
+user.logged_out
+user.subscription_changed
+```
+
+#### **4. Collaboration Events**
+```
+collection.created
+collection.shared
+annotation.created
+comment.added
+project.created
+project.updated
+team.member_added
+team.member_removed
+```
+
+#### **5. AI Events**
+```
+copilot.session_started
+copilot.query_submitted
+copilot.response_generated
+copilot.rag_retrieval_completed
+copilot.fact_check_completed
+```
+
+#### **6. Analysis Events**
+```
+gap_analysis.completed
+novelty_score.updated
+trend.detected
+competitive_alert.triggered
+```
+
+#### **7. Compliance Events**
+```
+access_request.granted
+access_request.denied
+data_export_requested
+audit_log.created
+```
+
+**Event Schema Example:**
+```json
+{
+  "event_id": "uuid",
+  "event_type": "paper.created",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "source_service": "paper-service",
+  "correlation_id": "uuid",
+  "user_id": "uuid",
+  "organization_id": "uuid",
+  "data": {
+    "paper_id": "uuid",
+    "title": "...",
+    "source": "arXiv",
+    "source_id": "2401.12345"
+  },
+  "metadata": {
+    "version": "1.0",
+    "region": "us-east-1"
+  }
+}
+```
+
+**Consumer Groups:**
+- Graph Indexing Service (builds knowledge graph)
+- Novelty Engine (updates novelty scores)
+- Analytics Service (tracks usage)
+- Notification Service (sends alerts)
+- Recommendation Engine (personalization)
+
+---
+
+## 2.4 Queue Architecture
+
+### Job Queues (Redis or Celery)
+
+**High-Priority Queues (SLA: <1 second):**
+- User authentication requests
+- API calls (real-time search, graph queries)
+- Real-time collaborative updates
+
+**Standard-Priority Queues (SLA: <5 minutes):**
+- Paper text extraction
+- Metadata extraction
+- Citation extraction
+- Simple graph updates
+- Email notifications
+
+**Low-Priority Queues (SLA: <1 hour):**
+- Trend analysis
+- Novelty scoring updates
+- Gap analysis updates
+- Competitive intelligence updates
+- Report generation
+- Analytics aggregation
+- Batch graph rebuilding
+
+**Example Queue Configuration:**
+```
+QUEUES = {
+  'realtime': {
+    'max_workers': 100,
+    'timeout': 30s,
+    'retries': 3,
+    'priority': 1
+  },
+  'standard': {
+    'max_workers': 50,
+    'timeout': 300s,
+    'retries': 3,
+    'priority': 2
+  },
+  'batch': {
+    'max_workers': 20,
+    'timeout': 3600s,
+    'retries': 1,
+    'priority': 3
+  }
+}
+```
+
+---
+
+## 2.5 AI Architecture
+
+### 2.5.1 Research Copilot Pipeline
+
+```
+User Query (Research Question)
+        ↓
+    ┌───────────────────────────┐
+    │ Query Understanding       │
+    │ - Intent classification   │
+    │ - Entity extraction       │
+    │ - Clarification if needed │
+    └───────────┬───────────────┘
+                ↓
+    ┌───────────────────────────┐
+    │ Retrieval (RAG Pipeline)  │
+    │ Stage 1: Broad search     │
+    │ - Semantic search (vector)│
+    │ - Keyword search          │
+    │ - Citation network search │
+    │ - Knowledge graph search  │
+    │ Result: Top 100 papers    │
+    └───────────┬───────────────┘
+                ↓
+    ┌───────────────────────────┐
+    │ Retrieval Stage 2: Rank   │
+    │ & Filter                  │
+    │ - Citation relevance      │
+    │ - Methodological fit      │
+    │ - Recency                 │
+    │ - Authority               │
+    │ Result: Top 10-15 papers  │
+    └───────────┬───────────────┘
+                ↓
+    ┌───────────────────────────┐
+    │ Context Assembly          │
+    │ - Extract key content     │
+    │ - Build context window    │
+    │ - Add knowledge graph     │
+    │   context                 │
+    └───────────┬───────────────┘
+                ↓
+    ┌───────────────────────────┐
+    │ LLM Generation            │
+    │ - Use GPT-4 or better     │
+    │ - Specialized prompt      │
+    │ - Multi-step reasoning    │
+    │ - Citation tracking       │
+    └───────────┬───────────────┘
+                ↓
+    ┌───────────────────────────┐
+    │ Fact Checking             │
+    │ - Verify claims against   │
+    │   knowledge graph         │
+    │ - Check for contradictions│
+    │ - Confidence scoring      │
+    └───────────┬───────────────┘
+                ↓
+    ┌───────────────────────────┐
+    │ Response Generation       │
+    │ - Format response         │
+    │ - Add citations           │
+    │ - Add reasoning           │
+    │ - Add related papers      │
+    └───────────┬───────────────┘
+                ↓
+        Response to User
+```
+
+**Key Components:**
+
+**1. Query Understanding**
+- Intent classification: summarization, comparison, methodology, gap analysis, prediction
+- Entity extraction: concepts, datasets, methods, researchers, organizations
+- Question clarification (if ambiguous)
+
+**2. Multi-Stage Retrieval**
+
+*Stage 1: Broad Search (Recall-Optimized)*
+- Semantic search: Query embedding → vector similarity search in Qdrant
+- Keyword search: BM25 across full text and metadata
+- Citation network search: Find papers highly cited by relevant papers
+- Knowledge graph search: Find papers connected via concepts
+
+*Stage 2: Ranking & Filtering (Precision-Optimized)*
+```
+RANKING_SCORE = (
+  0.3 * SEMANTIC_SIMILARITY +
+  0.2 * CITATION_NETWORK_SCORE +
+  0.2 * AUTHORITY_SCORE +
+  0.15 * RECENCY_SCORE +
+  0.15 * CONFLICT_RESOLUTION_SCORE
+)
+
+where:
+- AUTHORITY_SCORE = h_index_percentile_of_first_author
+- RECENCY_SCORE = 1 / (years_since_publication ^ 0.5)
+- CONFLICT_RESOLUTION = positive_if_supports_consensus, 
+                        negative_if_contradicts
+```
+
+**3. Context Assembly**
+- Extract: abstract, methodology, key results, limitations, future work
+- Add: knowledge graph context (related concepts, methods, datasets)
+- Build: structured context window (max 8000 tokens before response)
+
+**4. LLM Generation**
+
+*Specialized Prompts for Different Tasks:*
+
+**Summarization Prompt:**
+```
+You are an expert research scientist. Summarize the following papers 
+in the context of the user's research question: [QUESTION]
+
+Papers to summarize:
+[PAPERS WITH CONTEXT]
+
+Provide a 200-word summary that:
+1. Directly addresses the user's question
+2. Highlights key findings and methodologies
+3. Notes any contradictions or limitations
+4. Explains implications for the research area
+
+Format: Use markdown with citations in the format [1], [2], etc.
+```
+
+**Gap Analysis Prompt:**
+```
+You are an expert research strategist. Analyze the following papers 
+to identify research gaps in: [TOPIC]
+
+Papers analyzed:
+[PAPERS WITH CONTEXT]
+
+Identify:
+1. Questions that are NOT being asked
+2. Methodologies not yet applied to this problem
+3. Cross-disciplinary insights not yet explored
+4. Empirical predictions not yet tested
+
+For each gap:
+- Explain why it matters
+- Estimate difficulty and resource requirements
+- Suggest potential research approaches
+- Rate impact potential (1-10)
+
+Format: Use markdown with citations.
+```
+
+**Synthesis Prompt:**
+```
+You are an expert research communicator. Synthesize the following papers 
+to answer the user's question: [QUESTION]
+
+Papers:
+[PAPERS WITH CONTEXT]
+
+In your response:
+1. Start with the most important finding/insight
+2. Explain the methodology and evidence
+3. Note any limitations or contradictions
+4. Provide nuanced interpretation
+5. Suggest next steps for understanding this area
+
+Be precise and academic in tone. Cite all claims.
+```
+
+*Fact-Checking Integration:*
+- After LLM generation, parse citations
+- Verify each claim against knowledge graph
+- Flag uncertain claims with confidence scores
+- Suggest additional citations if available
+
+**5. Multi-Turn Conversation**
+- Store conversation context
+- Support follow-up questions
+- Build dialogue memory (what was already discussed)
+- Detect topic shifts and provide transitions
+
+---
+
+### 2.5.2 Novelty Scoring Model
+
+**Inputs:**
+- Paper embeddings (semantic content)
+- Citation network (who cites whom)
+- Metadata (publication date, field, keywords)
+- Paper concepts (extracted entities)
+- Historical publication trends
+
+**Scoring Formula:**
+
+```
+NOVELTY_SCORE(paper, field) = (
+  0.25 * CONCEPTUAL_NOVELTY(paper) +
+  0.20 * METHODOLOGICAL_NOVELTY(paper) +
+  0.15 * EMPIRICAL_NOVELTY(paper) +
+  0.20 * SEMANTIC_DISTANCE(paper, field) +
+  0.20 * TREND_VELOCITY(field)
+) * (1 - SATURATION_PENALTY(field))
+
+where:
+
+CONCEPTUAL_NOVELTY = 
+  1 - max_cosine_similarity_to_previous_papers_concepts
+
+METHODOLOGICAL_NOVELTY =
+  1 - max_similarity_to_previous_papers_methodologies
+
+EMPIRICAL_NOVELTY =
+  avg_distance_to_nearest_k_papers +
+  novelty_of_datasets_used +
+  novelty_of_experimental_setup
+
+SEMANTIC_DISTANCE(paper, field) =
+  1 - (avg_similarity_to_field_papers / max_possible_similarity)
+
+TREND_VELOCITY(field) = 
+  ln(papers_last_year / papers_previous_year)
+
+SATURATION_PENALTY(field) =
+  min(1.0, papers_in_field_last_year / 
+          (historical_median_rate * 2.5))
+```
+
+**Calibration:**
+- Trained on citation count growth over 2+ years (papers with >10X citation growth = highly novel)
+- Validated against expert researcher novelty judgments
+- Field-specific calibration (different for AI vs. biology)
+
+---
+
+### 2.5.3 Embedding Model
+
+**Strategy:** Proprietary fine-tuned embedding model
+- Base: OpenAI ada-002 or similar (1536 dimensions)
+- Fine-tuning: Research paper citation pairs (papers frequently cited together are semantically similar)
+- Dataset: 50M+ citation pairs from S2ORC
+
+**Update Frequency:**
+- Continuously retrained on new citations
+- Major update every quarter
+- Full reindexing every 6 months
+
+**Storage:**
+- Qdrant vector database
+- 100M papers × 1536 dims × 4 bytes = ~614GB
+- Replicated 3x for redundancy and query distribution
+
+---
+
+### 2.5.4 Ranking Model
+
+**Learning-to-Rank (LTR) Model:**
+- Gradient Boosted Trees (LightGBM or XGBoost)
+- Features: semantic similarity, citation count, author h-index, recency, field match, etc.
+- Labels: click-through rate, save rate, time spent on paper, user feedback
+- Retraining: Weekly on new user interaction data
+
+**Offline Training Pipeline:**
+1. Sample 100K user search sessions
+2. Extract features for each paper in result set
+3. Label by user behavior (click = positive, skip = negative)
+4. Train LTR model
+5. Validation on holdout test set
+6. Deploy if performance improves
+
+---
+
+## 2.6 Search Architecture
+
+### 2.6.1 Indexing Strategy
+
+**Paper Content Indexed:**
+1. Metadata: title, abstract, authors, publication date, source
+2. Full text: entire paper (text extracted from PDF)
+3. Keywords: extracted key terms from NLP
+4. Concepts: semantic entities (diseases, methods, organisms, etc.)
+5. Embeddings: dense vector representation
+6. Citations: referenced papers, citing papers
+7. Metadata fields: field, subfield, language
+
+**Indexing Pipeline:**
+```
+New Paper (PDF)
+    ↓
+[Paper Service] Extract text, metadata, citations
+    ↓
+[Event] paper.extracted → event stream
+    ↓
+[Indexing Workers] (Batch processing)
+    ├─ Full-text indexing (Elasticsearch)
+    ├─ Embedding generation (embedding model)
+    ├─ Concept extraction (NER model)
+    └─ Citation linking
+    ↓
+[Data Layer]
+    ├─ Elasticsearch (full-text, metadata)
+    ├─ Qdrant (embeddings/vectors)
+    ├─ PostgreSQL (metadata, relationships)
+    └─ Redis (cache, recent additions)
+    ↓
+Ready for search queries
+```
+
+**Indexing Performance:**
+- 10,000 papers/day: ~15 seconds per paper end-to-end
+- Capacity: horizontal scaling with Elasticsearch clusters
+- Latency SLA: indexed and queryable within 5 minutes
+
+---
+
+### 2.6.2 Hybrid Search Ranking
+
+**Search Query Flow:**
+
+```
+User Query: "deep learning drug discovery"
+    ↓
+[Query Understanding]
+    ├─ Tokenization
+    ├─ Query expansion (synonyms)
+    ├─ Field detection (title, abstract, full-text)
+    └─ Intent classification (search type)
+    ↓
+[Parallel Search Execution]
+    ├─ Keyword Search (Elasticsearch BM25)
+    │   └─ Top 1000 results by relevance
+    ├─ Semantic Search (Qdrant vector search)
+    │   └─ Top 1000 results by cosine similarity
+    ├─ Citation Network Search
+    │   └─ Find highly-cited papers in result set
+    └─ Knowledge Graph Search
+        └─ Find papers with related concepts
+    ↓
+[Result Merging & Ranking]
+    For each unique paper in combined results:
+    
+    score = (
+      0.35 * normalized_keyword_score +
+      0.35 * normalized_semantic_score +
+      0.15 * normalized_citation_score +
+      0.10 * normalized_recency_score +
+      0.05 * normalized_authority_score
+    )
+    
+    Normalize each score to [0, 1] range
+    ↓
+[Top Results]
+    Return top 50 papers, ranked by composite score
+    ↓
+[Response]
+    Display with snippets, highlights, and metadata
+```
+
+**Algorithm Details:**
+
+**1. Keyword Search (Elasticsearch):**
+```
+BM25(query, document) = ∑ IDF(qi) * (f(qi, D) * (k1 + 1)) / 
+                                    (f(qi, D) + k1 * (1 - b + b * |D| / avgdl))
+
+Parameters:
+- k1 = 1.2 (term frequency saturation)
+- b = 0.75 (field length normalization)
+- avgdl = average document length
+
+Field-specific weights:
+- Title: 5x
+- Abstract: 2x
+- Full-text: 1x
+- Keywords: 3x
+```
+
+**2. Semantic Search (Qdrant):**
+```
+cosine_similarity(query_embedding, paper_embedding) = 
+  (query_vec · paper_vec) / (|query_vec| * |paper_vec|)
+
+With approximate nearest neighbor search for scale
+```
+
+**3. Citation Network Score:**
+```
+citation_score(paper) = 
+  ln(1 + citation_count) +
+  0.5 * recency_boost(publication_year)
+
+where recency_boost increases score for recent highly-cited papers
+```
+
+**4. Authority Score:**
+```
+authority_score(paper) = 
+  mean(h_index_percentile of first 3 authors) +
+  0.3 * ln(1 + total_author_citations)
+```
+
+---
+
+### 2.6.3 Search Performance Optimization
+
+**Caching Strategy:**
+```
+Level 1: In-Memory Query Cache (Redis)
+  - Cache common searches for 1 hour
+  - Hit rate target: 40-50% of searches
+  - Storage: 10GB
+
+Level 2: Elasticsearch Query Cache
+  - Automatic caching by Elasticsearch
+  - LRU eviction
+
+Level 3: Vector Cache (Qdrant)
+  - Cache popular embeddings
+  - Hit rate: 60-70%
+```
+
+**Query Optimization:**
+- Precompute popular searches offline
+- Query expansion for common synonyms
+- Autocomplete with prefix search
+- Suggestion ranking
+
+**Infrastructure Scaling:**
+```
+Search QPS (Queries Per Second) vs. Infrastructure:
+
+1,000 QPS:    Single Elasticsearch node (16GB RAM)
+10,000 QPS:   3-node Elasticsearch cluster
+100,000 QPS:  10-node Elasticsearch cluster + caching layer
+1,000,000 QPS: Multi-region Elasticsearch + Memcached
+
+Note: Assumes 80/20 distribution (80% cache hits, 20% new queries)
+```
+
+---
+
+# PART 3: INFRASTRUCTURE ARCHITECTURE
+
+## 3.1 Deployment Architecture
+
+### 3.1.1 Frontend
+
+**Technology Stack:**
+- React 18+ with TypeScript
+- Next.js for SSR (server-side rendering)
+- Tailwind CSS for styling
+- TanStack Query (React Query) for server state
+- Redux or Zustand for client state
+- WebSocket integration for real-time updates
+- Service Workers for offline capability
+
+**Deployment:**
+```
+Global CDN (Cloudflare / Akamai)
+  ↓
+CloudFront / CDN edge nodes
+  ↓
+  ├─ Static assets (JS, CSS, images)
+  ├─ HTML (with Cache-Control: max-age=300)
+  └─ Auto-scaling based on traffic
+  
+Infrastructure:
+  - S3 for static asset storage
+  - CloudFront for CDN distribution
+  - Auto-scaling for compute (if needed for SSR)
+```
+
+**Performance Targets:**
+- First Contentful Paint (FCP): <1.5s
+- Largest Contentful Paint (LCP): <2.5s
+- Cumulative Layout Shift (CLS): <0.1
+- Bundle size: <200KB (gzipped)
+
+---
+
+### 3.1.2 Backend Services
+
+**Container Orchestration:** Kubernetes (EKS or GKE)
+
+**Service Deployment Pattern:**
+```
+For each microservice:
+
+Code Repository (GitHub)
+    ↓
+[GitHub Actions CI/CD]
+    ├─ Run tests
+    ├─ Build Docker image
+    ├─ Push to Docker registry (ECR/GCR)
+    └─ Push to container registry
+    ↓
+[ArgoCD / GitOps]
+    ├─ Watch for new image versions
+    ├─ Update Kubernetes manifests
+    └─ Deploy to clusters
+    ↓
+[Kubernetes Deployment]
+    ├─ Pod scheduling
+    ├─ Health checks
+    ├─ Auto-scaling
+    └─ Load balancing
+```
+
+**Resource Requirements per Service (MVP):**
+```
+Auth Service:           2 pods × (1 CPU, 512 MB RAM)
+Discovery Service:      4 pods × (2 CPU, 2 GB RAM)
+Paper Service:          3 pods × (1 CPU, 1 GB RAM)
+Knowledge Graph Svc:    2 pods × (2 CPU, 4 GB RAM)
+Novelty Engine:         2 pods × (2 CPU, 2 GB RAM)
+Gap Engine:             2 pods × (2 CPU, 2 GB RAM)
+AI Copilot Service:     3 pods × (2 CPU, 2 GB RAM)
+Collaboration Svc:      2 pods × (1 CPU, 1 GB RAM)
+User Service:           2 pods × (1 CPU, 512 MB RAM)
+Compliance Service:     1 pod × (1 CPU, 512 MB RAM)
+Analytics Service:      2 pods × (1 CPU, 2 GB RAM)
+Export Service:         2 pods × (1 CPU, 1 GB RAM)
+Monitoring Service:     1 pod × (1 CPU, 512 MB RAM)
+Integration Service:    1 pod × (1 CPU, 512 MB RAM)
+
+Total MVP: ~40 CPU cores, ~30 GB RAM
+Cost at AWS: ~$5-8K/month for compute (EKS)
+```
+
+**Scaling Strategy:**
+```
+At 10K users:   +50% resource allocation
+At 100K users:  +2x resources, multi-region deployment
+At 1M users:    +5x resources, full multi-region, edge computing
+```
+
+---
+
+### 3.1.3 Async Workers
+
+**Job Processing Infrastructure:**
+
+```
+Task Submission (Service)
+    ↓
+[Message Queue] Redis Streams or Kafka
+    ├─ Realtime queue (for <1s SLA tasks)
+    ├─ Standard queue (for <5min SLA tasks)
+    └─ Batch queue (for <1hr SLA tasks)
+    ↓
+[Worker Pool] Celery or similar
+    ├─ Realtime workers: 100 instances
+    ├─ Standard workers: 50 instances
+    └─ Batch workers: 20 instances
+    ↓
+[Task Execution]
+    └─ Execute, log, retry on failure
+    ↓
+[Completion Callback]
+    └─ Update database, emit event, notify service
+```
+
+**Worker Specifications:**
+```
+Realtime Workers: 
+  Instance size: m5.large (1x CPU, 8GB RAM)
+  Container: 100 workers per instance
+  Max tasks/worker: 1 concurrent
+  Timeout: 30 seconds
+
+Standard Workers:
+  Instance size: m5.large
+  Container: 50 workers per instance
+  Max tasks/worker: 5 concurrent
+  Timeout: 5 minutes
+
+Batch Workers:
+  Instance size: m5.2xlarge (8x CPU, 32GB RAM)
+  Container: 20 workers per instance
+  Max tasks/worker: 10 concurrent
+  Timeout: 1 hour
+```
+
+**Monitoring:**
+- Queue depth (alert if >10K tasks pending)
+- Worker health (alert if worker dies)
+- Task failure rate (alert if >1% failures)
+- Task latency (p50, p95, p99)
+
+---
+
+### 3.1.4 Data Layer
+
+#### **PostgreSQL (Relational Data)**
+
+**Cluster Configuration (MVP):**
+```
+Primary Node:           db.r5.2xlarge (8 vCPU, 64GB RAM, 2TB SSD)
+Replica 1:              db.r5.2xlarge (standby)
+Replica 2:              db.r5.2xlarge (read replica for analytics)
+
+Storage:                2TB initially, auto-scaling to 10TB
+Backup:                 Daily snapshots, retained 30 days
+High Availability:      Multi-AZ with automatic failover
+
+At 100K users: Upgrade to db.r5.4xlarge + add read replicas
+At 1M users:  Multi-region read replicas + cross-region failover
+```
+
+**Connection Pooling:**
+- PgBouncer: 1 pool per service
+- Connection limit: 100 per pool
+- Total pool size: 2000 connections at scale
+
+**Query Optimization:**
+- Index on frequently filtered columns
+- Materialized views for complex queries
+- Partition large tables (e.g., events, logs by date)
+- Connection from read replicas for analytics queries
+
+---
+
+#### **Qdrant (Vector Database)**
+
+**Cluster Configuration (MVP):**
+```
+Nodes:                  3 nodes minimum (quorum)
+Node Size:              Standard with 500GB NVMe per node
+Total Storage:          1.5TB (sufficient for 100M paper embeddings)
+Replication Factor:     2 (data duplicated across nodes)
+
+Index Configuration:
+  Index Type:           HNSW (Hierarchical Navigable Small World)
+  M (max connections):  16
+  ef_construct:         200
+  ef_search:            100 (tuned for recall)
+  
+Performance:
+  Indexing:             ~50K vectors/second
+  Query Latency:        <100ms (p99)
+  QPS Capacity:         10,000 queries/second per node
+```
+
+**Scaling Strategy:**
+```
+10M papers:    1 Qdrant cluster (500GB)
+100M papers:   1 Qdrant cluster (5TB, requires larger nodes)
+1B papers:     Multiple Qdrant clusters (sharding by topic/field)
+```
+
+---
+
+#### **Redis (Caching & Real-Time)**
+
+**Cluster Configuration (MVP):**
+```
+Cache Cluster:
+  Nodes:                6 nodes (3 primaries, 3 replicas)
+  Node Size:            cache.m6g.xlarge (4 vCPU, 6.72GB RAM each)
+  Total Capacity:       ~40GB
+  Eviction Policy:      allkeys-lru (LRU with space limit)
+  Replication:          Master-replica
+
+Session/Queue Cluster:
+  Nodes:                3 nodes (cluster mode enabled)
+  Node Size:           cache.m6g.large (2 vCPU, 3.36GB RAM each)
+  Total Capacity:       ~10GB
+```
+
+**Data Stored in Redis:**
+- User sessions (TTL: 7 days)
+- Query cache (TTL: 1 hour)
+- Rate limiting counters (TTL: 1 minute)
+- Job queues (FIFO)
+- Real-time notifications (pub/sub)
+- Recommendation cache (TTL: 1 day)
+
+---
+
+#### **S3 / Object Storage**
+
+**Storage Organization:**
+```
+Bucket: researchos-papers/
+├── pdfs/                      (raw PDFs)
+│   ├── {source}/
+│   │   ├── {source_id}.pdf
+│   │   └── ...
+│   └── (Lifecycle: Archive to Glacier after 1 year)
+├── extracted/                 (extracted content)
+│   ├── text/                  (plain text from PDFs)
+│   ├── figures/               (extracted figures)
+│   └── tables/                (extracted tables)
+├── metadata/                  (structured metadata)
+│   └── {paper_id}.json
+└── cache/                     (temporary cache)
+    └── (Lifecycle: Delete after 30 days)
+
+Bucket: researchos-exports/
+├── reports/                   (generated reports)
+├── citations/                 (citation export files)
+└── (Lifecycle: Delete after 90 days)
+
+Bucket: researchos-backups/
+├── database/                  (PostgreSQL snapshots)
+├── configs/                   (configuration backups)
+└── (Lifecycle: Archive after 30 days)
+
+Storage Costs at Scale:
+  10M papers × 2MB average = 20TB @ $23/TB/month = $460/month
+  With Glacier archival: reduce to 50% after 1 year
+  
+  At 100M papers: ~$4,600/month (before archival)
+  At 1B papers: ~$46,000/month
+```
+
+---
+
+### 3.1.5 Monitoring & Observability
+
+#### **Logging (ELK Stack or Datadog)**
+
+```
+Log Sources:
+├── Application logs (from all services)
+├── Infrastructure logs (Kubernetes, nodes)
+├── Database logs (PostgreSQL, Qdrant)
+├── Network logs (API calls, errors)
+└── Security logs (auth, access attempts)
+
+Log Aggregation:
+├─ Elasticsearch cluster (3 nodes, 100GB each)
+├─ Logstash for log parsing and enrichment
+└─ Kibana for visualization and search
+
+Log Retention:
+├─ Hot tier (searchable): 7 days
+├─ Warm tier (searchable): 30 days
+├─ Cold tier (archive): 1 year
+├─ Total storage: ~500GB
+
+Daily log volume: ~50GB (scales to 500GB+ at 100K users)
+```
+
+**Key Dashboards:**
+- Service health (latency, error rate, throughput)
+- Database performance (query latency, connection count)
+- Cache hit rates
+- Job queue depth and worker health
+- User activity and feature usage
+- API errors by type
+
+---
+
+#### **Monitoring (Prometheus + Grafana)**
+
+```
+Metrics Collection:
+├─ Prometheus scrapers collect metrics from services
+├─ Scrape interval: 15 seconds
+├─ Retention: 15 days of high-resolution data
+└─ Long-term storage: Thanos or S3 (365 days)
+
+Key Metrics:
+├─ HTTP request latency (p50, p95, p99)
+├─ Error rate (4xx, 5xx)
+├─ Database query latency
+├─ CPU, memory, disk usage
+├─ Network I/O
+├─ Cache hit rate
+├─ Vector search latency
+└─ Job queue depth
+
+Alert Rules:
+├─ Service error rate >1%
+├─ API latency p99 >2s
+├─ Database connection pool >80%
+├─ Disk usage >80%
+├─ Service replica down
+└─ Queue depth >10K
+```
+
+**Grafana Dashboards:**
+- System health (CPU, memory, disk, network)
+- API performance (latency, throughput, errors)
+- Search performance (vector search latency, keyword search latency)
+- Database performance (query times, connections, cache)
+- User engagement (DAU, searches/day, features used)
+
+---
+
+#### **Distributed Tracing (Jaeger / Datadog APM)**
+
+```
+Trace Collection:
+├─ OpenTelemetry instrumentation in services
+├─ Jaeger backend for trace storage and visualization
+├─ Sampling: trace 10% of requests in production
+├─ Retention: 48 hours
+
+Trace Details:
+├─ Request path through services
+├─ Latency at each service
+├─ Database queries
+├─ External API calls
+├─ Error traces
+└─ Span context propagation
+
+Use Cases:
+├─ Identify slow requests
+├─ Detect cascading failures
+├─ Visualize service dependencies
+└─ Performance optimization
+```
+
+---
+
+#### **Alerting & On-Call (PagerDuty / Opsgenie)**
+
+```
+Alert Severity Levels:
+
+Critical (Immediate Page):
+  - Service down (0 replicas running)
+  - Data loss or corruption
+  - Database unreachable
+  - Security breach detected
+  - Cascading failures
+
+High (Page within 15 min):
+  - Service error rate >5%
+  - API latency p99 >5s
+  - Multiple service replicas down
+  - Database CPU >90%
+  - Revenue-impacting outage
+
+Medium (Create ticket):
+  - Service error rate >1%
+  - API latency p99 >2s
+  - Single service replica down
+  - Cache performance degradation
+  - Disk usage trending toward full
+
+Low (Log and monitor):
+  - Minor performance degradation
+  - Non-critical service warnings
+  - Scheduled maintenance notifications
+```
+
+---
+
+### 3.1.6 CI/CD Pipeline
+
+```
+Git Commit
+    ↓
+[GitHub]
+    └─ Trigger webhook on push to main/develop
+    ↓
+[GitHub Actions]
+    ├─ Run unit tests (parallel)
+    ├─ Run integration tests
+    ├─ Run linting/code quality checks
+    ├─ Security scanning (SAST)
+    ├─ Dependency vulnerability check
+    └─ Build Docker image
+    ↓
+    IF all checks pass:
+        ├─ Push image to registry (ECR/GCR)
+        └─ Create deployment manifest
+    ↓
+[ArgoCD / Manual approval]
+    ├─ Compare manifests with cluster state
+    ├─ Manual approval required (for production)
+    └─ Deploy new version
+    ↓
+[Kubernetes]
+    ├─ Rolling update (10% at a time)
+    ├─ Health checks after each step
+    ├─ Automatic rollback if health checks fail
+    └─ Update complete
+    ↓
+[Post-Deployment]
+    ├─ Run smoke tests
+    ├─ Monitor metrics for 5 minutes
+    ├─ Alert on deployment issues
+    └─ Notification to Slack
+```
+
+**Deployment Frequency:**
+- MVP: 1-2x per day (with manual approval)
+- 10K users: 3-5x per day
+- 100K users: Continuous deployment (feature flags for gradual rollout)
+- 1M users: Canary deployments (1% → 10% → 50% → 100%)
+
+---
+
+# PART 4: DATABASE ARCHITECTURE
+
+## 4.1 Complete Schema
+
+### 4.1.1 Core Domain Tables
+
+#### **Users & Authentication**
+
+```sql
+-- Core user accounts
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  email_verified BOOLEAN DEFAULT false,
+  password_hash VARCHAR(255) NOT NULL,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  profile_picture_url VARCHAR(500),
+  bio TEXT,
+  research_interests TEXT[], -- Array of topics
+  orcid_id VARCHAR(50),
+  researcher_profile_verified BOOLEAN DEFAULT false,
+  h_index INTEGER,
+  institution_id UUID,
+  position_title VARCHAR(100),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  last_login TIMESTAMP,
+  is_active BOOLEAN DEFAULT true,
+  metadata JSONB -- Flexible storage for future fields
+);
+
+-- User sessions
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  ip_address INET,
+  user_agent VARCHAR(500),
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  last_activity TIMESTAMP DEFAULT NOW(),
+  metadata JSONB
+);
+
+-- Multi-factor authentication
+CREATE TABLE mfa_settings (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id),
+  mfa_type VARCHAR(20), -- 'totp', 'sms', 'email'
+  secret_key VARCHAR(255), -- Encrypted
+  backup_codes TEXT[], -- Encrypted
+  enabled BOOLEAN DEFAULT false,
+  created_at TIMESTAMP,
+  verified_at TIMESTAMP
+);
+
+-- OAuth connections
+CREATE TABLE oauth_connections (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  provider VARCHAR(50), -- 'google', 'github', 'orcid'
+  provider_user_id VARCHAR(255) NOT NULL,
+  provider_email VARCHAR(255),
+  access_token VARCHAR(1000), -- Encrypted
+  refresh_token VARCHAR(1000), -- Encrypted
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(provider, provider_user_id)
+);
+
+-- API keys for programmatic access
+CREATE TABLE api_keys (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  name VARCHAR(100) NOT NULL,
+  key_hash VARCHAR(255) NOT NULL UNIQUE, -- bcrypt hash
+  last_used_at TIMESTAMP,
+  rate_limit_requests_per_minute INTEGER DEFAULT 100,
+  rate_limit_requests_per_day INTEGER DEFAULT 10000,
+  scopes VARCHAR(255)[], -- e.g., ['read:papers', 'write:collections']
+  is_active BOOLEAN DEFAULT true,
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Audit log for authentication events
+CREATE TABLE auth_audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  event_type VARCHAR(50), -- 'login', 'logout', 'mfa_success', 'mfa_failed', etc.
+  ip_address INET,
+  user_agent VARCHAR(500),
+  status VARCHAR(20), -- 'success', 'failure'
+  failure_reason VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_institution ON users(institution_id);
+CREATE INDEX idx_sessions_user ON sessions(user_id);
+CREATE INDEX idx_sessions_expires ON sessions(expires_at);
+CREATE INDEX idx_oauth_provider ON oauth_connections(provider, provider_user_id);
+CREATE INDEX idx_api_keys_user ON api_keys(user_id);
+CREATE INDEX idx_auth_logs_user_date ON auth_audit_logs(user_id, created_at DESC);
+```
+
+---
+
+#### **Organizations & Teams**
+
+```sql
+-- Institutions (universities, companies, research labs)
+CREATE TABLE organizations (
+  id UUID PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  organization_type VARCHAR(50), -- 'university', 'company', 'lab', 'hospital'
+  domain VARCHAR(255), -- e.g., 'mit.edu' for auto-joining
+  website_url VARCHAR(500),
+  logo_url VARCHAR(500),
+  description TEXT,
+  contact_email VARCHAR(255),
+  country VARCHAR(100),
+  timezone VARCHAR(50),
+  verification_status VARCHAR(20), -- 'verified', 'pending', 'rejected'
+  subscription_tier VARCHAR(20), -- 'free', 'professional', 'enterprise'
+  created_by_user_id UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  metadata JSONB
+);
+
+-- User memberships in organizations
+CREATE TABLE organization_members (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  user_id UUID NOT NULL REFERENCES users(id),
+  role VARCHAR(20) NOT NULL, -- 'admin', 'member', 'viewer'
+  joined_at TIMESTAMP DEFAULT NOW(),
+  invited_by_user_id UUID REFERENCES users(id),
+  invitation_accepted_at TIMESTAMP,
+  is_primary_org BOOLEAN DEFAULT false,
+  UNIQUE(organization_id, user_id)
+);
+
+-- Teams within organizations
+CREATE TABLE teams (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  created_by_user_id UUID NOT NULL REFERENCES users(id),
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(organization_id, name)
+);
+
+-- Team memberships
+CREATE TABLE team_members (
+  id UUID PRIMARY KEY,
+  team_id UUID NOT NULL REFERENCES teams(id),
+  user_id UUID NOT NULL REFERENCES users(id),
+  role VARCHAR(20) NOT NULL, -- 'lead', 'member'
+  joined_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(team_id, user_id)
+);
+
+CREATE INDEX idx_org_members_org ON organization_members(organization_id);
+CREATE INDEX idx_org_members_user ON organization_members(user_id);
+CREATE INDEX idx_teams_org ON teams(organization_id);
+CREATE INDEX idx_team_members_team ON team_members(team_id);
+CREATE INDEX idx_team_members_user ON team_members(user_id);
+```
+
+---
+
+#### **Papers & Metadata**
+
+```sql
+-- Core paper records
+CREATE TABLE papers (
+  id UUID PRIMARY KEY,
+  source_id VARCHAR(50) NOT NULL, -- e.g., 'arXiv:2301.12345', 'PMID:12345678'
+  source VARCHAR(50) NOT NULL, -- 'arxiv', 'pubmed', 'biorxiv', 'crossref'
+  source_url VARCHAR(500),
+  title VARCHAR(500) NOT NULL,
+  abstract TEXT,
+  keywords VARCHAR(100)[],
+  publication_date DATE,
+  first_author_name VARCHAR(255),
+  author_count INTEGER,
+  journal_name VARCHAR(255),
+  journal_issn VARCHAR(20),
+  volume VARCHAR(20),
+  issue VARCHAR(20),
+  pages VARCHAR(50),
+  doi VARCHAR(100),
+  pmid VARCHAR(50),
+  arxiv_id VARCHAR(50),
+  language VARCHAR(10) DEFAULT 'en',
+  subject_areas VARCHAR(100)[],
+  field VARCHAR(100), -- 'biology', 'computer_science', 'physics', etc.
+  subfield VARCHAR(100),
+  publication_status VARCHAR(50), -- 'preprint', 'published'
+  is_open_access BOOLEAN DEFAULT false,
+  open_access_url VARCHAR(500),
+  pdf_available BOOLEAN DEFAULT false,
+  pdf_s3_path VARCHAR(500),
+  text_extracted BOOLEAN DEFAULT false,
+  text_s3_path VARCHAR(500),
+  citation_count INTEGER DEFAULT 0,
+  h_index_score FLOAT,
+  relevance_score FLOAT,
+  novelty_score FLOAT,
+  impact_score FLOAT,
+  version VARCHAR(50), -- For preprints with versions
+  deduplication_master_id UUID REFERENCES papers(id), -- If duplicate, points to original
+  data_ingestion_timestamp TIMESTAMP DEFAULT NOW(),
+  last_updated TIMESTAMP DEFAULT NOW(),
+  metadata JSONB
+);
+
+-- Paper versions (preprint → published)
+CREATE TABLE paper_versions (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  source_id VARCHAR(50),
+  version_number INTEGER,
+  publication_date DATE,
+  doi VARCHAR(100),
+  title VARCHAR(500),
+  abstract TEXT,
+  version_type VARCHAR(50), -- 'preprint', 'published', 'corrected'
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Paper authors
+CREATE TABLE paper_authors (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  author_name VARCHAR(255) NOT NULL,
+  author_order INTEGER NOT NULL,
+  orcid_id VARCHAR(50),
+  affiliation VARCHAR(500),
+  researcher_id UUID REFERENCES users(id), -- If user in system
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Paper citations (linking papers together)
+CREATE TABLE paper_citations (
+  id UUID PRIMARY KEY,
+  citing_paper_id UUID NOT NULL REFERENCES papers(id),
+  cited_paper_id UUID NOT NULL REFERENCES papers(id),
+  citation_context VARCHAR(500), -- The sentence context
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(citing_paper_id, cited_paper_id)
+);
+
+-- Extracted paper content
+CREATE TABLE paper_content (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id) UNIQUE,
+  full_text TEXT,
+  section_texts JSONB, -- { "introduction": "...", "methods": "...", etc. }
+  key_findings TEXT,
+  key_limitations TEXT,
+  future_work TEXT,
+  extracted_concepts VARCHAR(255)[], -- NER results
+  extracted_methods VARCHAR(255)[],
+  extracted_datasets VARCHAR(255)[],
+  extracted_organisms VARCHAR(255)[],
+  extracted_diseases VARCHAR(255)[],
+  tables_and_figures JSONB, -- Metadata about extracted tables/figures
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Metadata for indexed papers (for quick filtering)
+CREATE TABLE paper_metadata (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id) UNIQUE,
+  embedding_vector FLOAT4[] STORED GENERATED ALWAYS AS (NULL),
+  is_indexed BOOLEAN DEFAULT false,
+  index_timestamp TIMESTAMP,
+  search_text_indexed BOOLEAN DEFAULT false,
+  availability_status VARCHAR(50), -- 'available', 'restricted', 'not_available'
+  license_type VARCHAR(50),
+  institution_count INTEGER -- How many institutions have access
+);
+
+CREATE INDEX idx_papers_source ON papers(source, source_id);
+CREATE INDEX idx_papers_doi ON papers(doi);
+CREATE INDEX idx_papers_title ON papers USING gin(to_tsvector('english', title));
+CREATE INDEX idx_papers_abstract ON papers USING gin(to_tsvector('english', abstract));
+CREATE INDEX idx_papers_field_subfield ON papers(field, subfield);
+CREATE INDEX idx_papers_publication_date ON papers(publication_date DESC);
+CREATE INDEX idx_papers_novelty_score ON papers(novelty_score DESC);
+CREATE INDEX idx_papers_citation_count ON papers(citation_count DESC);
+CREATE INDEX idx_paper_authors_paper ON paper_authors(paper_id);
+CREATE INDEX idx_paper_citations_citing ON paper_citations(citing_paper_id);
+CREATE INDEX idx_paper_citations_cited ON paper_citations(cited_paper_id);
+CREATE INDEX idx_paper_content_paper ON paper_content(paper_id);
+```
+
+---
+
+#### **User Collections & Saving**
+
+```sql
+-- Paper collections (curated by users)
+CREATE TABLE collections (
+  id UUID PRIMARY KEY,
+  organization_id UUID REFERENCES organizations(id),
+  created_by_user_id UUID NOT NULL REFERENCES users(id),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  collection_type VARCHAR(50), -- 'personal', 'shared_team', 'shared_organization'
+  is_public BOOLEAN DEFAULT false,
+  paper_count INTEGER DEFAULT 0,
+  tags VARCHAR(100)[],
+  color_code VARCHAR(20),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Papers in collections
+CREATE TABLE collection_papers (
+  id UUID PRIMARY KEY,
+  collection_id UUID NOT NULL REFERENCES collections(id),
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  added_by_user_id UUID NOT NULL REFERENCES users(id),
+  user_notes TEXT,
+  rating INTEGER, -- 1-5 stars
+  date_added TIMESTAMP DEFAULT NOW(),
+  date_read TIMESTAMP,
+  is_favorite BOOLEAN DEFAULT false,
+  UNIQUE(collection_id, paper_id)
+);
+
+-- Shared collections (permissions)
+CREATE TABLE collection_shares (
+  id UUID PRIMARY KEY,
+  collection_id UUID NOT NULL REFERENCES collections(id),
+  shared_with_user_id UUID REFERENCES users(id),
+  shared_with_team_id UUID REFERENCES teams(id),
+  permission_level VARCHAR(50), -- 'view', 'comment', 'edit'
+  shared_by_user_id UUID NOT NULL REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  CHECK (shared_with_user_id IS NOT NULL OR shared_with_team_id IS NOT NULL)
+);
+
+-- Saved searches
+CREATE TABLE saved_searches (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  query VARCHAR(500) NOT NULL,
+  search_type VARCHAR(50), -- 'keyword', 'semantic', 'hybrid'
+  filters JSONB, -- Saved filter criteria
+  sort_by VARCHAR(50),
+  name VARCHAR(255),
+  description TEXT,
+  last_executed TIMESTAMP,
+  execution_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Saved search results (for historical comparison)
+CREATE TABLE saved_search_results (
+  id UUID PRIMARY KEY,
+  saved_search_id UUID NOT NULL REFERENCES saved_searches(id),
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  rank INTEGER,
+  score FLOAT,
+  snapshot_timestamp TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_collections_user ON collections(created_by_user_id);
+CREATE INDEX idx_collections_org ON collections(organization_id);
+CREATE INDEX idx_collection_papers_collection ON collection_papers(collection_id);
+CREATE INDEX idx_collection_papers_paper ON collection_papers(paper_id);
+CREATE INDEX idx_collection_shares_collection ON collection_shares(collection_id);
+CREATE INDEX idx_saved_searches_user ON saved_searches(user_id);
+```
+
+---
+
+#### **Annotations & Collaboration**
+
+```sql
+-- Paper annotations (highlights, notes)
+CREATE TABLE annotations (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  created_by_user_id UUID NOT NULL REFERENCES users(id),
+  collection_id UUID REFERENCES collections(id),
+  annotation_type VARCHAR(50), -- 'highlight', 'note', 'bookmark'
+  page_number INTEGER,
+  text_quoted VARCHAR(500),
+  annotation_text TEXT,
+  color_code VARCHAR(20),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Comments on papers / annotations (threaded discussions)
+CREATE TABLE comments (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  annotation_id UUID REFERENCES annotations(id),
+  parent_comment_id UUID REFERENCES comments(id), -- For nested replies
+  created_by_user_id UUID NOT NULL REFERENCES users(id),
+  comment_text TEXT NOT NULL,
+  is_edited BOOLEAN DEFAULT false,
+  edited_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  deleted_at TIMESTAMP -- Soft delete
+);
+
+-- Reactions to comments (emoji reactions)
+CREATE TABLE comment_reactions (
+  id UUID PRIMARY KEY,
+  comment_id UUID NOT NULL REFERENCES comments(id),
+  user_id UUID NOT NULL REFERENCES users(id),
+  reaction_emoji VARCHAR(10), -- '👍', '❤️', etc.
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(comment_id, user_id, reaction_emoji)
+);
+
+-- Research projects (for organization/tracking)
+CREATE TABLE research_projects (
+  id UUID PRIMARY KEY,
+  organization_id UUID REFERENCES organizations(id),
+  created_by_user_id UUID NOT NULL REFERENCES users(id),
+  team_id UUID REFERENCES teams(id),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50), -- 'planning', 'active', 'completed', 'archived'
+  start_date DATE,
+  end_date DATE,
+  research_area VARCHAR(100),
+  collection_id UUID REFERENCES collections(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Project members
+CREATE TABLE project_members (
+  id UUID PRIMARY KEY,
+  project_id UUID NOT NULL REFERENCES research_projects(id),
+  user_id UUID NOT NULL REFERENCES users(id),
+  role VARCHAR(50), -- 'lead', 'contributor'
+  joined_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(project_id, user_id)
+);
+
+CREATE INDEX idx_annotations_paper ON annotations(paper_id);
+CREATE INDEX idx_annotations_user ON annotations(created_by_user_id);
+CREATE INDEX idx_comments_paper ON comments(paper_id);
+CREATE INDEX idx_comments_user ON comments(created_by_user_id);
+CREATE INDEX idx_projects_organization ON research_projects(organization_id);
+CREATE INDEX idx_projects_team ON research_projects(team_id);
+CREATE INDEX idx_project_members_project ON project_members(project_id);
+```
+
+---
+
+### 4.1.2 Analysis & Insights Tables
+
+#### **Search & Trending**
+
+```sql
+-- Search queries (track what users search for)
+CREATE TABLE search_queries (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  organization_id UUID REFERENCES organizations(id),
+  query_text VARCHAR(500) NOT NULL,
+  search_type VARCHAR(50), -- 'keyword', 'semantic', 'hybrid'
+  result_count INTEGER,
+  clicked_result_count INTEGER,
+  saved_from_results BOOLEAN DEFAULT false,
+  execution_time_ms INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Search trending analysis
+CREATE TABLE trending_searches (
+  id UUID PRIMARY KEY,
+  search_query VARCHAR(500) NOT NULL,
+  metric_date DATE NOT NULL,
+  query_count INTEGER,
+  unique_users INTEGER,
+  trend_direction VARCHAR(20), -- 'up', 'down', 'stable'
+  trend_strength FLOAT, -- 0-1, how fast it's growing
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(search_query, metric_date)
+);
+
+-- User search behavior
+CREATE TABLE user_search_behavior (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  metric_date DATE NOT NULL,
+  searches_per_day INTEGER,
+  papers_clicked INTEGER,
+  papers_saved INTEGER,
+  papers_read_count INTEGER,
+  most_searched_topics VARCHAR(255)[],
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, metric_date)
+);
+
+CREATE INDEX idx_search_queries_user_date ON search_queries(user_id, created_at DESC);
+CREATE INDEX idx_search_queries_org_date ON search_queries(organization_id, created_at DESC);
+CREATE INDEX idx_trending_searches_date ON trending_searches(metric_date DESC);
+CREATE INDEX idx_user_search_behavior_user_date ON user_search_behavior(user_id, metric_date DESC);
+```
+
+---
+
+#### **Novelty & Gap Analysis**
+
+```sql
+-- Novelty scores (recalculated periodically)
+CREATE TABLE novelty_scores (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  metric_date DATE NOT NULL,
+  novelty_score FLOAT NOT NULL, -- 0-100
+  conceptual_novelty FLOAT,
+  methodological_novelty FLOAT,
+  empirical_novelty FLOAT,
+  semantic_distance FLOAT,
+  trend_velocity FLOAT,
+  saturation_penalty FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(paper_id, metric_date)
+);
+
+-- Topic trends (publication rate over time)
+CREATE TABLE topic_trends (
+  id UUID PRIMARY KEY,
+  topic VARCHAR(255) NOT NULL,
+  metric_date DATE NOT NULL,
+  paper_count INTEGER,
+  new_authors_count INTEGER,
+  avg_novelty_score FLOAT,
+  trending_velocity FLOAT, -- Rate of change
+  field VARCHAR(100),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(topic, metric_date)
+);
+
+-- Research gaps
+CREATE TABLE research_gaps (
+  id UUID PRIMARY KEY,
+  gap_title VARCHAR(255) NOT NULL,
+  gap_description TEXT,
+  field VARCHAR(100),
+  subfield VARCHAR(100),
+  gap_type VARCHAR(50), -- 'topic_combination', 'method', 'cross_disciplinary', 'empirical'
+  impact_score FLOAT, -- Potential impact 0-100
+  difficulty_score FLOAT, -- Difficulty 0-100
+  resource_requirement_score FLOAT,
+  opportunity_score FLOAT,
+  detected_date DATE,
+  status VARCHAR(50), -- 'emerging', 'active', 'saturating', 'solved'
+  related_papers INTEGER,
+  detected_by_algorithm VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Gap opportunities for teams
+CREATE TABLE gap_opportunities (
+  id UUID PRIMARY KEY,
+  gap_id UUID NOT NULL REFERENCES research_gaps(id),
+  team_id UUID NOT NULL REFERENCES teams(id),
+  alignment_score FLOAT, -- How well does this gap fit team capabilities?
+  feasibility_score FLOAT,
+  strategic_importance_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Competitive analysis
+CREATE TABLE competitive_analysis (
+  id UUID PRIMARY KEY,
+  organization_id UUID REFERENCES organizations(id),
+  competitor_organization_id UUID REFERENCES organizations(id),
+  metric_date DATE NOT NULL,
+  competing_on_topic VARCHAR(255),
+  competitor_paper_count INTEGER,
+  our_paper_count INTEGER,
+  competitor_avg_novelty FLOAT,
+  our_avg_novelty FLOAT,
+  competitive_intensity FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(organization_id, competitor_organization_id, metric_date, competing_on_topic)
+);
+
+CREATE INDEX idx_novelty_scores_paper_date ON novelty_scores(paper_id, metric_date DESC);
+CREATE INDEX idx_topic_trends_date ON topic_trends(metric_date DESC);
+CREATE INDEX idx_topic_trends_topic ON topic_trends(topic);
+CREATE INDEX idx_research_gaps_field ON research_gaps(field, subfield);
+CREATE INDEX idx_research_gaps_status ON research_gaps(status);
+CREATE INDEX idx_gap_opportunities_team ON gap_opportunities(team_id);
+CREATE INDEX idx_competitive_analysis_org_date ON competitive_analysis(organization_id, metric_date DESC);
+```
+
+---
+
+#### **Research Portfolio Analysis**
+
+```sql
+-- Portfolio entries (for organizations tracking their research)
+CREATE TABLE portfolio_entries (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  project_id UUID REFERENCES research_projects(id),
+  paper_id UUID REFERENCES papers(id),
+  entry_type VARCHAR(50), -- 'internal_project', 'funded_paper', 'collaboration'
+  status VARCHAR(50), -- 'active', 'completed', 'archived'
+  investment_amount DECIMAL(15,2),
+  start_date DATE,
+  end_date DATE,
+  expected_impact_score FLOAT,
+  actual_impact_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Portfolio trend analysis
+CREATE TABLE portfolio_analysis (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  metric_date DATE NOT NULL,
+  total_active_projects INTEGER,
+  total_investment DECIMAL(15,2),
+  avg_project_novelty FLOAT,
+  portfolio_diversity_score FLOAT,
+  gap_coverage_score FLOAT, -- How well does portfolio cover identified gaps?
+  competitive_comparison_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(organization_id, metric_date)
+);
+
+CREATE INDEX idx_portfolio_entries_org ON portfolio_entries(organization_id);
+CREATE INDEX idx_portfolio_entries_project ON portfolio_entries(project_id);
+CREATE INDEX idx_portfolio_analysis_org_date ON portfolio_analysis(organization_id, metric_date DESC);
+```
+
+---
+
+### 4.1.3 AI & Knowledge Graph Tables
+
+#### **AI Copilot**
+
+```sql
+-- Copilot sessions
+CREATE TABLE copilot_sessions (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  collection_id UUID REFERENCES collections(id),
+  session_type VARCHAR(50), -- 'summarization', 'gap_analysis', 'synthesis', 'q&a'
+  started_at TIMESTAMP DEFAULT NOW(),
+  ended_at TIMESTAMP,
+  paper_count INTEGER,
+  total_messages INTEGER,
+  total_tokens_used INTEGER,
+  model_used VARCHAR(50),
+  cost DECIMAL(10,4)
+);
+
+-- Copilot messages (conversation history)
+CREATE TABLE copilot_messages (
+  id UUID PRIMARY KEY,
+  session_id UUID NOT NULL REFERENCES copilot_sessions(id),
+  message_type VARCHAR(20), -- 'user', 'assistant'
+  message_text TEXT NOT NULL,
+  tokens_used INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- RAG retrieval tracking (for optimization)
+CREATE TABLE rag_retrievals (
+  id UUID PRIMARY KEY,
+  session_id UUID NOT NULL REFERENCES copilot_sessions(id),
+  message_id UUID NOT NULL REFERENCES copilot_messages(id),
+  query VARCHAR(500),
+  retrieved_paper_ids UUID[],
+  retrieval_strategy VARCHAR(50), -- 'semantic', 'keyword', 'graph'
+  retrieval_latency_ms INTEGER,
+  result_quality_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Fact checking results
+CREATE TABLE fact_checks (
+  id UUID PRIMARY KEY,
+  session_id UUID NOT NULL REFERENCES copilot_sessions(id),
+  claim TEXT,
+  supporting_papers UUID[],
+  confidence_score FLOAT, -- 0-1
+  status VARCHAR(50), -- 'verified', 'uncertain', 'contradicted'
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_copilot_sessions_user ON copilot_sessions(user_id);
+CREATE INDEX idx_copilot_messages_session ON copilot_messages(session_id);
+CREATE INDEX idx_rag_retrievals_session ON rag_retrievals(session_id);
+CREATE INDEX idx_fact_checks_session ON fact_checks(session_id);
+```
+
+---
+
+#### **Knowledge Graph**
+
+```sql
+-- Semantic entities (concepts, methods, datasets, researchers, organizations)
+CREATE TABLE knowledge_graph_entities (
+  id UUID PRIMARY KEY,
+  entity_type VARCHAR(50), -- 'concept', 'method', 'dataset', 'organism', 'disease', 'researcher', 'organization'
+  entity_name VARCHAR(255) NOT NULL,
+  entity_normalized_name VARCHAR(255), -- Lowercased, normalized
+  description TEXT,
+  field VARCHAR(100),
+  subfield VARCHAR(100),
+  paper_count INTEGER, -- How many papers mention this?
+  first_mentioned_paper_date DATE,
+  last_mentioned_paper_date DATE,
+  entity_embeddings FLOAT[], -- Vector representation
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(entity_type, entity_normalized_name)
+);
+
+-- Relationships between entities
+CREATE TABLE knowledge_graph_relationships (
+  id UUID PRIMARY KEY,
+  entity_a_id UUID NOT NULL REFERENCES knowledge_graph_entities(id),
+  entity_b_id UUID NOT NULL REFERENCES knowledge_graph_entities(id),
+  relationship_type VARCHAR(50), -- 'uses', 'develops', 'studies', 'extends', 'contradicts'
+  relationship_strength FLOAT, -- 0-1, based on co-occurrence
+  paper_count INTEGER, -- How many papers show this relationship?
+  first_paper_date DATE,
+  last_paper_date DATE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(entity_a_id, entity_b_id, relationship_type)
+);
+
+-- Entity mentions in papers (for tracing)
+CREATE TABLE entity_mentions (
+  id BIGSERIAL PRIMARY KEY,
+  entity_id UUID NOT NULL REFERENCES knowledge_graph_entities(id),
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  mention_count INTEGER, -- How many times mentioned in this paper?
+  first_mention_position INTEGER, -- Character position in text
+  context_text VARCHAR(500), -- Surrounding text for verification
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_kg_entities_type ON knowledge_graph_entities(entity_type);
+CREATE INDEX idx_kg_entities_name ON knowledge_graph_entities(entity_normalized_name);
+CREATE INDEX idx_kg_relationships_entity_a ON knowledge_graph_relationships(entity_a_id);
+CREATE INDEX idx_kg_relationships_entity_b ON knowledge_graph_relationships(entity_b_id);
+CREATE INDEX idx_entity_mentions_entity ON entity_mentions(entity_id);
+CREATE INDEX idx_entity_mentions_paper ON entity_mentions(paper_id);
+```
+
+---
+
+### 4.1.4 System & Compliance Tables
+
+#### **Access & Compliance**
+
+```sql
+-- Paper access rights
+CREATE TABLE paper_access_rights (
+  id UUID PRIMARY KEY,
+  paper_id UUID NOT NULL REFERENCES papers(id),
+  organization_id UUID REFERENCES organizations(id),
+  access_type VARCHAR(50), -- 'open_access', 'institutional', 'paid', 'restricted'
+  license_type VARCHAR(50), -- 'cc-by', 'cc-by-nc', 'publisher_agreement', 'unknown'
+  legal_status VARCHAR(50), -- 'verified_legal', 'likely_legal', 'restricted', 'unknown'
+  requires_authentication BOOLEAN DEFAULT false,
+  can_redistribute BOOLEAN DEFAULT false,
+  can_modify BOOLEAN DEFAULT false,
+  last_verified_date DATE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Data export requests (GDPR compliance)
+CREATE TABLE data_export_requests (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  status VARCHAR(50), -- 'pending', 'processing', 'ready', 'downloaded'
+  request_date TIMESTAMP DEFAULT NOW(),
+  completion_date TIMESTAMP,
+  file_url VARCHAR(500),
+  file_expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Audit logs (all important actions)
+CREATE TABLE audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  organization_id UUID REFERENCES organizations(id),
+  action_type VARCHAR(100), -- 'view_paper', 'export_collection', 'share_collection', etc.
+  resource_type VARCHAR(50), -- 'paper', 'collection', 'user', etc.
+  resource_id UUID,
+  resource_name VARCHAR(255),
+  action_details JSONB,
+  ip_address INET,
+  status VARCHAR(20), -- 'success', 'failure'
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- User consent tracking
+CREATE TABLE user_consents (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  consent_type VARCHAR(50), -- 'privacy_policy', 'terms_of_service', 'research_usage'
+  version VARCHAR(20),
+  accepted BOOLEAN DEFAULT false,
+  accepted_at TIMESTAMP,
+  ip_address INET,
+  user_agent VARCHAR(500),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_paper_access_paper ON paper_access_rights(paper_id);
+CREATE INDEX idx_paper_access_org ON paper_access_rights(organization_id);
+CREATE INDEX idx_data_export_user ON data_export_requests(user_id);
+CREATE INDEX idx_audit_logs_user_date ON audit_logs(user_id, created_at DESC);
+CREATE INDEX idx_audit_logs_org_date ON audit_logs(organization_id, created_at DESC);
+CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
+CREATE INDEX idx_user_consents_user ON user_consents(user_id);
+```
+
+---
+
+#### **System Settings & Configuration**
+
+```sql
+-- Feature flags
+CREATE TABLE feature_flags (
+  id UUID PRIMARY KEY,
+  flag_name VARCHAR(100) NOT NULL UNIQUE,
+  flag_description TEXT,
+  enabled BOOLEAN DEFAULT false,
+  rollout_percentage INTEGER DEFAULT 0, -- 0-100% of users
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- User preferences
+CREATE TABLE user_preferences (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id),
+  theme VARCHAR(20), -- 'light', 'dark', 'auto'
+  language VARCHAR(20), -- 'en', 'es', etc.
+  email_digest_frequency VARCHAR(20), -- 'daily', 'weekly', 'monthly', 'none'
+  email_alerts_enabled BOOLEAN DEFAULT true,
+  paper_recommendations_enabled BOOLEAN DEFAULT true,
+  trending_topics_enabled BOOLEAN DEFAULT true,
+  notification_preferences JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Rate limiting (for API)
+CREATE TABLE rate_limit_rules (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  organization_id UUID REFERENCES organizations(id),
+  requests_per_minute INTEGER,
+  requests_per_day INTEGER,
+  requests_per_month INTEGER,
+  tier VARCHAR(50), -- 'free', 'professional', 'enterprise'
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- System notifications
+CREATE TABLE system_notifications (
+  id UUID PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  notification_type VARCHAR(50), -- 'maintenance', 'feature', 'alert'
+  severity VARCHAR(20), -- 'info', 'warning', 'critical'
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP,
+  target_audience VARCHAR(50), -- 'all_users', 'premium_only', 'beta_testers'
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Notification delivery tracking
+CREATE TABLE notification_deliveries (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id),
+  notification_type VARCHAR(50), -- 'email', 'in_app', 'push'
+  notification_id UUID,
+  status VARCHAR(50), -- 'pending', 'sent', 'failed', 'bounced'
+  sent_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_feature_flags_name ON feature_flags(flag_name);
+CREATE INDEX idx_user_preferences_user ON user_preferences(user_id);
+CREATE INDEX idx_rate_limit_rules_user ON rate_limit_rules(user_id);
+CREATE INDEX idx_notification_deliveries_user_date ON notification_deliveries(user_id, created_at DESC);
+```
+
+---
+
+## 4.2 Relationship Diagram
+
+### Key Relationships:
+
+```
+users (1) ──────────────── (N) sessions
+users (1) ──────────────── (N) api_keys
+users (1) ──────────────── (N) oauth_connections
+users (1) ──────────────── (N) organization_members
+users (1) ──────────────── (N) auth_audit_logs
+
+organizations (1) ──────────────── (N) organization_members
+organizations (1) ──────────────── (N) teams
+organizations (1) ──────────────── (N) collections
+organizations (1) ──────────────── (N) research_projects
+organizations (1) ──────────────── (N) portfolio_entries
+organizations (1) ──────────────── (N) paper_access_rights
+organizations (1) ──────────────── (N) portfolio_analysis
+
+teams (1) ──────────────── (N) team_members
+teams (1) ──────────────── (N) research_projects
+
+papers (1) ──────────────── (N) paper_authors
+papers (1) ──────────────── (N) paper_citations (both directions)
+papers (1) ──────────────── (N) paper_versions
+papers (1) ──────────────── (1) paper_content
+papers (1) ──────────────── (1) paper_metadata
+papers (1) ──────────────── (N) annotations
+papers (1) ──────────────── (N) comments
+papers (1) ──────────────── (N) collection_papers
+papers (1) ──────────────── (N) novelty_scores
+papers (1) ──────────────── (N) paper_access_rights
+papers (1) ──────────────── (N) entity_mentions
+papers (1) ──────────────── (N) portfolio_entries
+
+collections (1) ──────────────── (N) collection_papers
+collections (1) ──────────────── (N) collection_shares
+collections (1) ──────────────── (N) research_projects
+
+research_projects (1) ──────────────── (N) project_members
+research_projects (1) ──────────────── (N) portfolio_entries
+
+research_gaps (1) ──────────────── (N) gap_opportunities
+
+knowledge_graph_entities (M) ────────── (N) knowledge_graph_relationships
+
+copilot_sessions (1) ──────────────── (N) copilot_messages
+copilot_sessions (1) ──────────────── (N) rag_retrievals
+copilot_sessions (1) ──────────────── (N) fact_checks
+
+comments (1) ──────────────── (N) comments (parent-child)
+comments (1) ──────────────── (N) comment_reactions
+```
+
+---
+
+## 4.3 Indexing Strategy
+
+### Indexing Priorities:
+
+**Critical Indexes (Must Have):**
+```sql
+-- Search/discovery
+idx_papers_source ON papers(source, source_id)
+idx_papers_doi ON papers(doi)
+idx_papers_field_subfield ON papers(field, subfield)
+idx_papers_publication_date ON papers(publication_date DESC)
+idx_papers_novelty_score ON papers(novelty_score DESC)
+idx_papers_citation_count ON papers(citation_count DESC)
+
+-- Full-text search
+idx_papers_title ON papers USING gin(to_tsvector('english', title))
+idx_papers_abstract ON papers USING gin(to_tsvector('english', abstract))
+
+-- User/auth
+idx_users_email ON users(email)
+idx_api_keys_user ON api_keys(user_id)
+
+-- Collections/saving
+idx_collection_papers_collection ON collection_papers(collection_id)
+idx_collection_papers_paper ON collection_papers(paper_id)
+
+-- Audit/compliance
+idx_audit_logs_user_date ON audit_logs(user_id, created_at DESC)
+idx_auth_logs_user_date ON auth_audit_logs(user_id, created_at DESC)
+```
+
+**Important Indexes (Should Have):**
+```sql
+idx_papers_authors_paper ON paper_authors(paper_id)
+idx_paper_citations_citing ON paper_citations(citing_paper_id)
+idx_paper_citations_cited ON paper_citations(cited_paper_id)
+idx_saved_searches_user ON saved_searches(user_id)
+idx_annotations_paper ON annotations(paper_id)
+idx_comments_paper ON comments(paper_id)
+idx_search_queries_user_date ON search_queries(user_id, created_at DESC)
+idx_trending_searches_date ON trending_searches(metric_date DESC)
+idx_novelty_scores_paper_date ON novelty_scores(paper_id, metric_date DESC)
+```
+
+**Performance Tuning Indexes (For 100K+ users):**
+```sql
+-- Partial index for active sessions only
+CREATE INDEX idx_sessions_active ON sessions(user_id) 
+WHERE expires_at > NOW();
+
+-- Partial index for recent papers
+CREATE INDEX idx_papers_recent ON papers(novelty_score DESC)
+WHERE publication_date > NOW() - INTERVAL '1 year';
+
+-- Composite indexes for common queries
+CREATE INDEX idx_paper_field_novelty ON papers(field, novelty_score DESC);
+CREATE INDEX idx_paper_author_citations ON paper_authors(paper_id) INCLUDE (citation_count);
+```
+
+---
+
+## 4.4 Partition Strategy
+
+### Time-Series Partitioning:
+
+**Tables to Partition (by date):**
+
+```sql
+-- Partition audit_logs by month
+CREATE TABLE audit_logs (
+  ...
+) PARTITION BY RANGE (date_trunc('month', created_at));
+
+CREATE TABLE audit_logs_2024_01 PARTITION OF audit_logs 
+  FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+  
+CREATE TABLE audit_logs_2024_02 PARTITION OF audit_logs 
+  FOR VALUES FROM ('2024-02-01') TO ('2024-03-01');
+
+-- Similar for auth_audit_logs
+
+-- Partition search_queries by month
+CREATE TABLE search_queries (
+  ...
+) PARTITION BY RANGE (date_trunc('month', created_at));
+
+-- Partition entity_mentions by year (high volume table)
+CREATE TABLE entity_mentions (
+  ...
+) PARTITION BY RANGE (date_trunc('year', created_at));
+```
+
+**Benefits:**
+- Faster queries (only scan relevant partition)
+- Easier archival (drop old partitions)
+- Faster index operations
+- Better cache locality
+
+**Maintenance:**
+- Auto-create new partitions monthly via scheduled job
+- Archive old partitions to cold storage after 1 year
+
+---
+
+## 4.5 Query Patterns & Optimization
+
+### High-Traffic Query Patterns:
+
+**1. Search Query (Most Common)**
+```sql
+SELECT p.id, p.title, p.abstract, p.publication_date, 
+       p.citation_count, p.novelty_score,
+       array_agg(pa.author_name) AS authors
+FROM papers p
+LEFT JOIN paper_authors pa ON p.id = pa.paper_id
+WHERE p.field = $1 AND p.subfield = $2
+  AND p.publication_date > NOW() - INTERVAL '5 years'
+  AND p.novelty_score > $3
+ORDER BY p.novelty_score DESC, p.citation_count DESC
+LIMIT 50;
+
+-- Optimization:
+-- - Index: (field, subfield, novelty_score DESC)
+-- - Materialize authors in paper table or denormalize
+-- - Cache results for 1 hour
+```
+
+**2. Paper Citation Network**
+```sql
+SELECT cited_paper_id, COUNT(*) as citation_count
+FROM paper_citations
+WHERE citing_paper_id = $1
+GROUP BY cited_paper_id
+ORDER BY citation_count DESC
+LIMIT 20;
+
+-- Optimization:
+-- - Precompute and cache (update daily)
+-- - Store directly in papers table as a JSONB field
+-- - Update in batch job rather than real-time
+```
+
+**3. User Research Collection**
+```sql
+SELECT p.id, p.title, cp.added_by_user_id, cp.user_notes
+FROM collection_papers cp
+JOIN papers p ON cp.paper_id = p.id
+WHERE cp.collection_id = $1
+ORDER BY cp.date_added DESC;
+
+-- Optimization:
+-- - Composite index: (collection_id, date_added DESC)
+-- - Cache collection contents for 1 day
+```
+
+**4. Trending Topics**
+```sql
+SELECT topic, SUM(paper_count) as total_papers,
+       AVG(trending_velocity) as avg_velocity
+FROM topic_trends
+WHERE metric_date >= NOW() - INTERVAL '30 days'
+GROUP BY topic
+ORDER BY avg_velocity DESC
+LIMIT 20;
+
+-- Optimization:
+-- - Index: (metric_date DESC)
+-- - Precompute this query daily and cache results
+```
+
+---
+
+# PART 5: SEARCH ARCHITECTURE
+
+## 5.1 Paper Indexing
+
+### Data Normalization Pipeline:
+
+```
+Raw Paper (PDF + Metadata)
+    ↓
+[Extraction Service]
+    ├─ Extract text from PDF
+    ├─ Extract metadata (title, authors, abstract)
+    ├─ Extract citations
+    ├─ Extract figures and tables
+    ├─ Extract concepts (NER)
+    └─ Extract methods (domain-specific)
+    ↓
+[Normalization Service]
+    ├─ Clean text (remove special chars, normalize unicode)
+    ├─ Normalize author names (surname standardization)
+    ├─ Normalize concepts (resolve synonyms, abbreviations)
+    ├─ Resolve citations (link to known papers)
+    └─ Deduplicate paper versions
+    ↓
+[Enrichment Service]
+    ├─ Generate embeddings
+    ├─ Extract key findings
+    ├─ Identify contradictions with existing papers
+    ├─ Compute novelty score
+    ├─ Assign field/subfield
+    └─ Map to knowledge graph concepts
+    ↓
+[Indexing Service]
+    ├─ Index full-text (Elasticsearch)
+    ├─ Index embeddings (Qdrant)
+    ├─ Store metadata (PostgreSQL)
+    ├─ Update knowledge graph (Neo4j)
+    └─ Update cache (Redis)
+    ↓
+Ready for Search
+```
+
+### Metadata Normalization:
+
+```
+1. Author Name Normalization:
+   Input: ["John Smith", "Smith, John", "John Q. Smith"]
+   Output: "Smith, John"
+   
+2. Concept Normalization:
+   Input: ["Machine Learning", "ML", "Deep Learning", "Neural Networks"]
+   Output: Standardized to concept IDs in knowledge graph
+   
+3. Institution Normalization:
+   Input: ["MIT", "Mass Inst Tech", "Massachusetts Institute of Technology"]
+   Output: map to known organization ID
+   
+4. Publication Date Normalization:
+   Input: Various formats
+   Output: ISO 8601 format (YYYY-MM-DD)
+   
+5. Citation Format Normalization:
+   Input: Various citation formats
+   Output: Structured format with ID references
+```
+
+---
+
+## 5.2 Search Ranking Algorithm
+
+### Multi-Stage Ranking Pipeline:
+
+```
+Query: "deep learning drug discovery"
+    ↓
+[Stage 1: Recall Phase - Get Top 1000]
+    ├─ BM25 keyword search: Top 500 by relevance
+    ├─ Vector semantic search: Top 500 by similarity
+    └─ Graph-based search: Top 200 by connection strength
+    ├─ Merge & deduplicate: ~1000 unique papers
+    ↓
+[Stage 2: Ranking Phase - Score & Rank]
+    For each paper:
+        score = (
+          0.35 * norm(bm25_score) +         # Keyword relevance
+          0.35 * norm(semantic_score) +     # Semantic similarity
+          0.10 * norm(citation_score) +     # Citation network
+          0.10 * norm(authority_score) +    # Author authority
+          0.07 * norm(recency_score) +      # Publication freshness
+          0.03 * norm(field_match_score)    # Field alignment
+        )
+    ↓
+[Stage 3: Personalization Phase]
+    If user_id provided:
+        user_profile = load_user_interests(user_id)
+        for each paper:
+            personalization_boost = 0.1 if paper matches user_interests
+            score = score * (1 + personalization_boost)
+    ↓
+[Stage 4: Result Rendering]
+    Return top 50 papers with:
+    - Ranking explanation (which signals were most important)
+    - Snippet highlighting (keywords in context)
+    - Related papers (from citation network)
+    - Confidence score (how confident are we in this ranking?)
+```
+
+### Scoring Components:
+
+**1. BM25 Keyword Relevance**
+```
+BM25(q, d) = Σᵢ IDF(qᵢ) * [f(qᵢ, d) * (k1 + 1)] / [f(qᵢ, d) + k1 * (1 - b + b * |d|/avgdl)]
+
+where:
+- f(qᵢ, d) = frequency of term qᵢ in document d
+- |d| = length of document d
+- avgdl = average document length
+- k1 = 1.2 (controls term frequency saturation)
+- b = 0.75 (controls field length normalization)
+- IDF = inverse document frequency
+
+Field-specific term weights:
+- Title: 5x
+- Abstract: 2x
+- Keywords: 3x
+- Full-text: 1x
+
+Example: Paper with query term in title = 5x multiplier
+```
+
+**2. Semantic Similarity**
+```
+similarity = cos(embedding(query), embedding(document))
+
+where:
+- embeddings are 1536-dim vectors from fine-tuned model
+- embeddings trained on citation co-occurrence
+- cos(a, b) = (a · b) / (|a| * |b|)
+- Range: [-1, 1], rescaled to [0, 1]
+```
+
+**3. Citation Network Score**
+```
+citation_score = (
+  0.6 * ln(1 + citation_count) +
+  0.2 * recency_boost +
+  0.2 * h_index_normalized
+)
+
+where:
+- recency_boost = 1 / (1 + exp(-2 * (years_old - 5)))
+  (boost for papers 3-7 years old)
+- h_index_normalized = first_author_h_index / 100 (capped)
+```
+
+**4. Authority Score**
+```
+authority_score = (
+  mean(h_index_percentile of first 3 authors) * 0.7 +
+  ln(1 + total_author_citations) / 5 * 0.3
+)
+
+where:
+- h_index_percentile computed relative to field
+- Rewards papers from well-known researchers
+```
+
+**5. Recency Score**
+```
+recency_score = 1 - (1 / (1 + exp((years_old - 3) / 2)))
+
+where:
+- years_old = years since publication
+- Sigmoid curve: penalty for very old papers
+- Peak score for papers 2-4 years old
+```
+
+**6. Personalization**
+```
+personalization_boost = (
+  0.3 * concept_overlap +
+  0.3 * method_overlap +
+  0.2 * author_overlap +
+  0.2 * citation_overlap
+)
+
+where:
+- concept_overlap = Jaccard(paper_concepts, user_interests)
+- method_overlap = similar for methods
+- author_overlap = user has worked with/cited these authors
+- citation_overlap = paper cites works user has saved
+```
+
+---
+
+## 5.3 Hybrid Search Implementation
+
+### Architecture:
+
+```
+User Query
+    ↓
+[Query Parsing & Expansion]
+    ├─ Tokenize query
+    ├─ Expand synonyms (use thesaurus/wordnet)
+    ├─ Extract entities (concepts, methods, organisms)
+    ├─ Detect query intent (search type)
+    └─ Generate alternative phrasings
+    ↓
+[Parallel Search Execution]
+    │
+    ├─ Keyword Search (Elasticsearch)
+    │   ├─ BM25 search with field boosts
+    │   ├─ Return top 500 results with scores
+    │   └─ Latency: ~100ms
+    │
+    ├─ Semantic Search (Qdrant)
+    │   ├─ Generate query embedding
+    │   ├─ HNSW approximate similarity search
+    │   ├─ Return top 500 results with scores
+    │   └─ Latency: ~50ms
+    │
+    ├─ Citation Network Search
+    │   ├─ Find papers citing/cited by top keyword results
+    │   ├─ Return top 200 papers
+    │   └─ Latency: ~100ms
+    │
+    └─ Knowledge Graph Search
+        ├─ Find papers with related concepts
+        ├─ Traverse concept relationships
+        ├─ Return top 200 papers
+        └─ Latency: ~150ms
+        
+    Total parallel latency: ~200ms (max of all)
+    ↓
+[Result Merging]
+    Combine all result sets, remove duplicates
+    ↓
+[Ranking & Scoring]
+    For each unique paper:
+        composite_score = (
+          0.35 * norm(keyword_score) +
+          0.35 * norm(semantic_score) +
+          0.15 * norm(citation_network_score) +
+          0.10 * norm(kg_score) +
+          0.05 * norm(authority_score)
+        )
+    ↓
+[Personalization]
+    If user signed in:
+        Apply user-specific boosts based on interests
+    ↓
+[Top Results]
+    Return top 50 ranked papers
+    ↓
+[Response]
+    Return to user with:
+    - Ranked list
+    - Result snippets with highlighting
+    - Related papers
+    - "Why this paper?" explanation
+```
+
+### Example Query Trace:
+
+**Query:** "How does CRISPR gene editing work?"
+
+**Expansion:**
+- Original: "CRISPR gene editing"
+- Synonyms: ["CRISPR/Cas9", "Clustered Regularly Interspaced Short Palindromic Repeats", "genome editing"]
+- Entities: [CONCEPT: CRISPR, METHOD: gene editing]
+- Intent: Methodology explanation
+
+**Parallel Searches:**

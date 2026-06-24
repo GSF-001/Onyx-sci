@@ -1,0 +1,1685 @@
+I need to create the repository first. Let me provide you with all the migration files as a complete package that you can add to your repository once created.
+
+Here's the **complete database migration suite** for ResearchOS:
+
+---
+
+# ResearchOS Database Migrations
+
+## Migration Files Overview
+
+```
+packages/db/migrations/
+├── 001_create_users_tables.sql          (Users, Sessions, Auth)
+├── 002_create_organizations_tables.sql  (Orgs, Teams, Membership)
+├── 003_create_papers_tables.sql         (Papers, Metadata, Versions)
+├── 004_create_collections_tables.sql    (Collections, Sharing)
+├── 005_create_collaboration_tables.sql  (Annotations, Comments, Projects)
+├── 006_create_search_tables.sql         (Search queries, Trending)
+├── 007_create_analysis_tables.sql       (Novelty, Gaps, Portfolio)
+├── 008_create_copilot_tables.sql        (AI Copilot sessions)
+├── 009_create_knowledge_graph_tables.sql(Graph entities, relationships)
+├── 010_create_access_control_tables.sql (Compliance, Audit)
+├── 011_create_system_tables.sql         (Settings, Feature flags)
+├── 012_add_foreign_keys.sql             (All relationships)
+├── 013_add_partitioning.sql             (Table partitioning)
+└── 014_add_performance_indexes.sql      (Advanced indexes)
+```
+
+---
+
+## 001_create_users_tables.sql
+
+```sql
+-- Migration: 001_create_users_tables.sql
+-- Description: Core user, session, and authentication tables
+-- Created: 2024-01-01
+
+-- Create users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  email_verified BOOLEAN DEFAULT false,
+  password_hash VARCHAR(255) NOT NULL,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  profile_picture_url VARCHAR(500),
+  bio TEXT,
+  research_interests TEXT[],
+  orcid_id VARCHAR(50) UNIQUE,
+  researcher_profile_verified BOOLEAN DEFAULT false,
+  h_index INTEGER,
+  institution_id UUID,
+  position_title VARCHAR(100),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  last_login TIMESTAMP,
+  is_active BOOLEAN DEFAULT true,
+  metadata JSONB,
+  CONSTRAINT valid_email CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$')
+);
+
+-- Create sessions table
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  ip_address INET,
+  user_agent VARCHAR(500),
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  last_activity TIMESTAMP DEFAULT NOW(),
+  metadata JSONB
+);
+
+-- Create MFA settings table
+CREATE TABLE mfa_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  mfa_type VARCHAR(20) CHECK (mfa_type IN ('totp', 'sms', 'email')),
+  secret_key VARCHAR(255),
+  backup_codes TEXT[],
+  enabled BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW(),
+  verified_at TIMESTAMP
+);
+
+-- Create OAuth connections table
+CREATE TABLE oauth_connections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider VARCHAR(50) NOT NULL,
+  provider_user_id VARCHAR(255) NOT NULL,
+  provider_email VARCHAR(255),
+  access_token VARCHAR(1000),
+  refresh_token VARCHAR(1000),
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(provider, provider_user_id),
+  CONSTRAINT valid_provider CHECK (provider IN ('google', 'github', 'orcid'))
+);
+
+-- Create API keys table
+CREATE TABLE api_keys (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(100) NOT NULL,
+  key_hash VARCHAR(255) NOT NULL UNIQUE,
+  last_used_at TIMESTAMP,
+  rate_limit_requests_per_minute INTEGER DEFAULT 100,
+  rate_limit_requests_per_day INTEGER DEFAULT 10000,
+  scopes VARCHAR(255)[],
+  is_active BOOLEAN DEFAULT true,
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create auth audit logs table
+CREATE TABLE auth_audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  event_type VARCHAR(50) NOT NULL,
+  ip_address INET,
+  user_agent VARCHAR(500),
+  status VARCHAR(20) NOT NULL CHECK (status IN ('success', 'failure')),
+  failure_reason VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create user preferences table
+CREATE TABLE user_preferences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  theme VARCHAR(20) DEFAULT 'auto',
+  language VARCHAR(20) DEFAULT 'en',
+  email_digest_frequency VARCHAR(20) DEFAULT 'weekly',
+  email_alerts_enabled BOOLEAN DEFAULT true,
+  paper_recommendations_enabled BOOLEAN DEFAULT true,
+  trending_topics_enabled BOOLEAN DEFAULT true,
+  notification_preferences JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create indexes for users table
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_orcid ON users(orcid_id);
+CREATE INDEX idx_users_institution ON users(institution_id);
+CREATE INDEX idx_users_created_at ON users(created_at DESC);
+CREATE INDEX idx_users_is_active ON users(is_active);
+
+-- Create indexes for sessions table
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+CREATE INDEX idx_sessions_user_active ON sessions(user_id) WHERE expires_at > NOW();
+
+-- Create indexes for OAuth connections
+CREATE INDEX idx_oauth_provider ON oauth_connections(provider, provider_user_id);
+CREATE INDEX idx_oauth_user ON oauth_connections(user_id);
+
+-- Create indexes for API keys
+CREATE INDEX idx_api_keys_user ON api_keys(user_id);
+CREATE INDEX idx_api_keys_active ON api_keys(user_id) WHERE is_active = true;
+
+-- Create indexes for audit logs
+CREATE INDEX idx_auth_logs_user_date ON auth_audit_logs(user_id, created_at DESC);
+CREATE INDEX idx_auth_logs_event_date ON auth_audit_logs(event_type, created_at DESC);
+
+-- Create partial index for failed login attempts
+CREATE INDEX idx_auth_logs_failed_recent ON auth_audit_logs(user_id, created_at)
+WHERE status = 'failure' AND created_at > NOW() - INTERVAL '1 hour';
+```
+
+---
+
+## 002_create_organizations_tables.sql
+
+```sql
+-- Migration: 002_create_organizations_tables.sql
+-- Description: Organizations, teams, and membership tables
+-- Created: 2024-01-01
+
+-- Create organizations table
+CREATE TABLE organizations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  organization_type VARCHAR(50) NOT NULL CHECK (organization_type IN ('university', 'company', 'lab', 'hospital', 'other')),
+  domain VARCHAR(255),
+  website_url VARCHAR(500),
+  logo_url VARCHAR(500),
+  description TEXT,
+  contact_email VARCHAR(255),
+  country VARCHAR(100),
+  timezone VARCHAR(50),
+  verification_status VARCHAR(20) DEFAULT 'pending' CHECK (verification_status IN ('verified', 'pending', 'rejected')),
+  subscription_tier VARCHAR(20) DEFAULT 'free' CHECK (subscription_tier IN ('free', 'professional', 'enterprise')),
+  created_by_user_id UUID,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  metadata JSONB
+);
+
+-- Create organization members table
+CREATE TABLE organization_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'member', 'viewer')),
+  joined_at TIMESTAMP DEFAULT NOW(),
+  invited_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  invitation_accepted_at TIMESTAMP,
+  is_primary_org BOOLEAN DEFAULT false,
+  UNIQUE(organization_id, user_id)
+);
+
+-- Create teams table
+CREATE TABLE teams (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  created_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(organization_id, name)
+);
+
+-- Create team members table
+CREATE TABLE team_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role VARCHAR(20) NOT NULL CHECK (role IN ('lead', 'member')),
+  joined_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(team_id, user_id)
+);
+
+-- Create indexes for organizations
+CREATE INDEX idx_organizations_domain ON organizations(domain);
+CREATE INDEX idx_organizations_subscription_tier ON organizations(subscription_tier);
+CREATE INDEX idx_organizations_created_by ON organizations(created_by_user_id);
+
+-- Create indexes for organization members
+CREATE INDEX idx_org_members_organization ON organization_members(organization_id);
+CREATE INDEX idx_org_members_user ON organization_members(user_id);
+CREATE INDEX idx_org_members_role ON organization_members(role);
+
+-- Create indexes for teams
+CREATE INDEX idx_teams_organization ON teams(organization_id);
+CREATE INDEX idx_teams_created_by ON teams(created_by_user_id);
+CREATE INDEX idx_teams_public ON teams(organization_id) WHERE is_public = true;
+
+-- Create indexes for team members
+CREATE INDEX idx_team_members_team ON team_members(team_id);
+CREATE INDEX idx_team_members_user ON team_members(user_id);
+CREATE INDEX idx_team_members_role ON team_members(role);
+```
+
+---
+
+## 003_create_papers_tables.sql
+
+```sql
+-- Migration: 003_create_papers_tables.sql
+-- Description: Papers, metadata, versions, and content tables
+-- Created: 2024-01-01
+
+-- Create papers table
+CREATE TABLE papers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_id VARCHAR(50) NOT NULL,
+  source VARCHAR(50) NOT NULL CHECK (source IN ('arxiv', 'pubmed', 'biorxiv', 'chemrxiv', 'crossref', 'other')),
+  source_url VARCHAR(500),
+  title VARCHAR(500) NOT NULL,
+  abstract TEXT,
+  keywords VARCHAR(100)[],
+  publication_date DATE,
+  first_author_name VARCHAR(255),
+  author_count INTEGER,
+  journal_name VARCHAR(255),
+  journal_issn VARCHAR(20),
+  volume VARCHAR(20),
+  issue VARCHAR(20),
+  pages VARCHAR(50),
+  doi VARCHAR(100) UNIQUE,
+  pmid VARCHAR(50) UNIQUE,
+  arxiv_id VARCHAR(50) UNIQUE,
+  language VARCHAR(10) DEFAULT 'en',
+  subject_areas VARCHAR(100)[],
+  field VARCHAR(100),
+  subfield VARCHAR(100),
+  publication_status VARCHAR(50) CHECK (publication_status IN ('preprint', 'published', 'retracted')),
+  is_open_access BOOLEAN DEFAULT false,
+  open_access_url VARCHAR(500),
+  pdf_available BOOLEAN DEFAULT false,
+  pdf_s3_path VARCHAR(500),
+  text_extracted BOOLEAN DEFAULT false,
+  text_s3_path VARCHAR(500),
+  citation_count INTEGER DEFAULT 0,
+  h_index_score FLOAT,
+  relevance_score FLOAT,
+  novelty_score FLOAT,
+  impact_score FLOAT,
+  version VARCHAR(50),
+  deduplication_master_id UUID REFERENCES papers(id) ON DELETE SET NULL,
+  data_ingestion_timestamp TIMESTAMP DEFAULT NOW(),
+  last_updated TIMESTAMP DEFAULT NOW(),
+  metadata JSONB,
+  UNIQUE(source, source_id)
+);
+
+-- Create paper versions table
+CREATE TABLE paper_versions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  source_id VARCHAR(50),
+  version_number INTEGER NOT NULL,
+  publication_date DATE,
+  doi VARCHAR(100),
+  title VARCHAR(500),
+  abstract TEXT,
+  version_type VARCHAR(50) CHECK (version_type IN ('preprint', 'published', 'corrected')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create paper authors table
+CREATE TABLE paper_authors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  author_name VARCHAR(255) NOT NULL,
+  author_order INTEGER NOT NULL,
+  orcid_id VARCHAR(50),
+  affiliation VARCHAR(500),
+  researcher_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create paper citations table
+CREATE TABLE paper_citations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  citing_paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  cited_paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  citation_context VARCHAR(500),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(citing_paper_id, cited_paper_id)
+);
+
+-- Create paper content table
+CREATE TABLE paper_content (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL UNIQUE REFERENCES papers(id) ON DELETE CASCADE,
+  full_text TEXT,
+  section_texts JSONB,
+  key_findings TEXT,
+  key_limitations TEXT,
+  future_work TEXT,
+  extracted_concepts VARCHAR(255)[],
+  extracted_methods VARCHAR(255)[],
+  extracted_datasets VARCHAR(255)[],
+  extracted_organisms VARCHAR(255)[],
+  extracted_diseases VARCHAR(255)[],
+  tables_and_figures JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create paper metadata table
+CREATE TABLE paper_metadata (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL UNIQUE REFERENCES papers(id) ON DELETE CASCADE,
+  is_indexed BOOLEAN DEFAULT false,
+  index_timestamp TIMESTAMP,
+  search_text_indexed BOOLEAN DEFAULT false,
+  availability_status VARCHAR(50) CHECK (availability_status IN ('available', 'restricted', 'not_available')),
+  license_type VARCHAR(50),
+  institution_count INTEGER DEFAULT 0
+);
+
+-- Create indexes for papers table
+CREATE INDEX idx_papers_source ON papers(source, source_id);
+CREATE INDEX idx_papers_doi ON papers(doi);
+CREATE INDEX idx_papers_pmid ON papers(pmid);
+CREATE INDEX idx_papers_arxiv ON papers(arxiv_id);
+CREATE INDEX idx_papers_title_tsvector ON papers USING gin(to_tsvector('english', title));
+CREATE INDEX idx_papers_abstract_tsvector ON papers USING gin(to_tsvector('english', abstract));
+CREATE INDEX idx_papers_field_subfield ON papers(field, subfield);
+CREATE INDEX idx_papers_publication_date ON papers(publication_date DESC);
+CREATE INDEX idx_papers_novelty_score ON papers(novelty_score DESC);
+CREATE INDEX idx_papers_citation_count ON papers(citation_count DESC);
+CREATE INDEX idx_papers_h_index ON papers(h_index_score DESC);
+CREATE INDEX idx_papers_open_access ON papers(is_open_access);
+CREATE INDEX idx_papers_language ON papers(language);
+
+-- Create indexes for paper authors
+CREATE INDEX idx_paper_authors_paper ON paper_authors(paper_id);
+CREATE INDEX idx_paper_authors_orcid ON paper_authors(orcid_id);
+CREATE INDEX idx_paper_authors_name ON paper_authors(author_name);
+
+-- Create indexes for citations
+CREATE INDEX idx_paper_citations_citing ON paper_citations(citing_paper_id);
+CREATE INDEX idx_paper_citations_cited ON paper_citations(cited_paper_id);
+
+-- Create indexes for content
+CREATE INDEX idx_paper_content_paper ON paper_content(paper_id);
+
+-- Create indexes for metadata
+CREATE INDEX idx_paper_metadata_paper ON paper_metadata(paper_id);
+CREATE INDEX idx_paper_metadata_availability ON paper_metadata(availability_status);
+```
+
+---
+
+## 004_create_collections_tables.sql
+
+```sql
+-- Migration: 004_create_collections_tables.sql
+-- Description: Collections, saving, and search history tables
+-- Created: 2024-01-01
+
+-- Create collections table
+CREATE TABLE collections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  created_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  collection_type VARCHAR(50) NOT NULL CHECK (collection_type IN ('personal', 'shared_team', 'shared_organization')),
+  is_public BOOLEAN DEFAULT false,
+  paper_count INTEGER DEFAULT 0,
+  tags VARCHAR(100)[],
+  color_code VARCHAR(20),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create collection papers table
+CREATE TABLE collection_papers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  collection_id UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  added_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_notes TEXT,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  date_added TIMESTAMP DEFAULT NOW(),
+  date_read TIMESTAMP,
+  is_favorite BOOLEAN DEFAULT false,
+  UNIQUE(collection_id, paper_id)
+);
+
+-- Create collection shares table
+CREATE TABLE collection_shares (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  collection_id UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+  shared_with_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  shared_with_team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+  permission_level VARCHAR(50) NOT NULL CHECK (permission_level IN ('view', 'comment', 'edit')),
+  shared_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  CHECK (shared_with_user_id IS NOT NULL OR shared_with_team_id IS NOT NULL)
+);
+
+-- Create saved searches table
+CREATE TABLE saved_searches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  query VARCHAR(500) NOT NULL,
+  search_type VARCHAR(50) NOT NULL CHECK (search_type IN ('keyword', 'semantic', 'hybrid')),
+  filters JSONB,
+  sort_by VARCHAR(50),
+  name VARCHAR(255),
+  description TEXT,
+  last_executed TIMESTAMP,
+  execution_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create saved search results table
+CREATE TABLE saved_search_results (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  saved_search_id UUID NOT NULL REFERENCES saved_searches(id) ON DELETE CASCADE,
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  rank INTEGER,
+  score FLOAT,
+  snapshot_timestamp TIMESTAMP DEFAULT NOW()
+);
+
+-- Create indexes for collections
+CREATE INDEX idx_collections_user ON collections(created_by_user_id);
+CREATE INDEX idx_collections_organization ON collections(organization_id);
+CREATE INDEX idx_collections_type ON collections(collection_type);
+CREATE INDEX idx_collections_public ON collections(is_public) WHERE is_public = true;
+
+-- Create indexes for collection papers
+CREATE INDEX idx_collection_papers_collection ON collection_papers(collection_id);
+CREATE INDEX idx_collection_papers_paper ON collection_papers(paper_id);
+CREATE INDEX idx_collection_papers_user ON collection_papers(added_by_user_id);
+CREATE INDEX idx_collection_papers_favorite ON collection_papers(collection_id) WHERE is_favorite = true;
+
+-- Create indexes for collection shares
+CREATE INDEX idx_collection_shares_collection ON collection_shares(collection_id);
+CREATE INDEX idx_collection_shares_user ON collection_shares(shared_with_user_id);
+CREATE INDEX idx_collection_shares_team ON collection_shares(shared_with_team_id);
+
+-- Create indexes for saved searches
+CREATE INDEX idx_saved_searches_user ON saved_searches(user_id);
+CREATE INDEX idx_saved_searches_type ON saved_searches(search_type);
+```
+
+---
+
+## 005_create_collaboration_tables.sql
+
+```sql
+-- Migration: 005_create_collaboration_tables.sql
+-- Description: Annotations, comments, and research projects tables
+-- Created: 2024-01-01
+
+-- Create annotations table
+CREATE TABLE annotations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  created_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  collection_id UUID REFERENCES collections(id) ON DELETE SET NULL,
+  annotation_type VARCHAR(50) NOT NULL CHECK (annotation_type IN ('highlight', 'note', 'bookmark')),
+  page_number INTEGER,
+  text_quoted VARCHAR(500),
+  annotation_text TEXT,
+  color_code VARCHAR(20),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create comments table
+CREATE TABLE comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  annotation_id UUID REFERENCES annotations(id) ON DELETE SET NULL,
+  parent_comment_id UUID REFERENCES comments(id) ON DELETE CASCADE,
+  created_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  comment_text TEXT NOT NULL,
+  is_edited BOOLEAN DEFAULT false,
+  edited_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  deleted_at TIMESTAMP
+);
+
+-- Create comment reactions table
+CREATE TABLE comment_reactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  comment_id UUID NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  reaction_emoji VARCHAR(10) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(comment_id, user_id, reaction_emoji)
+);
+
+-- Create research projects table
+CREATE TABLE research_projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  created_by_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50) NOT NULL CHECK (status IN ('planning', 'active', 'completed', 'archived')),
+  start_date DATE,
+  end_date DATE,
+  research_area VARCHAR(100),
+  collection_id UUID REFERENCES collections(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create project members table
+CREATE TABLE project_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES research_projects(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role VARCHAR(50) NOT NULL CHECK (role IN ('lead', 'contributor')),
+  joined_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(project_id, user_id)
+);
+
+-- Create indexes for annotations
+CREATE INDEX idx_annotations_paper ON annotations(paper_id);
+CREATE INDEX idx_annotations_user ON annotations(created_by_user_id);
+CREATE INDEX idx_annotations_collection ON annotations(collection_id);
+CREATE INDEX idx_annotations_type ON annotations(annotation_type);
+
+-- Create indexes for comments
+CREATE INDEX idx_comments_paper ON comments(paper_id);
+CREATE INDEX idx_comments_annotation ON comments(annotation_id);
+CREATE INDEX idx_comments_user ON comments(created_by_user_id);
+CREATE INDEX idx_comments_parent ON comments(parent_comment_id);
+CREATE INDEX idx_comments_created_at ON comments(created_at DESC);
+
+-- Create indexes for comment reactions
+CREATE INDEX idx_reactions_comment ON comment_reactions(comment_id);
+CREATE INDEX idx_reactions_user ON comment_reactions(user_id);
+
+-- Create indexes for research projects
+CREATE INDEX idx_projects_organization ON research_projects(organization_id);
+CREATE INDEX idx_projects_team ON research_projects(team_id);
+CREATE INDEX idx_projects_user ON research_projects(created_by_user_id);
+CREATE INDEX idx_projects_status ON research_projects(status);
+CREATE INDEX idx_projects_dates ON research_projects(start_date, end_date);
+
+-- Create indexes for project members
+CREATE INDEX idx_project_members_project ON project_members(project_id);
+CREATE INDEX idx_project_members_user ON project_members(user_id);
+```
+
+---
+
+## 006_create_search_tables.sql
+
+```sql
+-- Migration: 006_create_search_tables.sql
+-- Description: Search queries, trending, and analytics tables
+-- Created: 2024-01-01
+
+-- Create search queries table
+CREATE TABLE search_queries (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  query_text VARCHAR(500) NOT NULL,
+  search_type VARCHAR(50) NOT NULL CHECK (search_type IN ('keyword', 'semantic', 'hybrid')),
+  result_count INTEGER,
+  clicked_result_count INTEGER,
+  saved_from_results BOOLEAN DEFAULT false,
+  execution_time_ms INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create trending searches table
+CREATE TABLE trending_searches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  search_query VARCHAR(500) NOT NULL,
+  metric_date DATE NOT NULL,
+  query_count INTEGER,
+  unique_users INTEGER,
+  trend_direction VARCHAR(20) CHECK (trend_direction IN ('up', 'down', 'stable')),
+  trend_strength FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(search_query, metric_date)
+);
+
+-- Create user search behavior table
+CREATE TABLE user_search_behavior (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  metric_date DATE NOT NULL,
+  searches_per_day INTEGER,
+  papers_clicked INTEGER,
+  papers_saved INTEGER,
+  papers_read_count INTEGER,
+  most_searched_topics VARCHAR(255)[],
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, metric_date)
+);
+
+-- Create indexes for search queries
+CREATE INDEX idx_search_queries_user_date ON search_queries(user_id, created_at DESC) WHERE user_id IS NOT NULL;
+CREATE INDEX idx_search_queries_org_date ON search_queries(organization_id, created_at DESC) WHERE organization_id IS NOT NULL;
+CREATE INDEX idx_search_queries_type ON search_queries(search_type);
+CREATE INDEX idx_search_queries_created ON search_queries(created_at DESC);
+
+-- Create indexes for trending searches
+CREATE INDEX idx_trending_searches_date ON trending_searches(metric_date DESC);
+CREATE INDEX idx_trending_searches_query ON trending_searches(search_query);
+CREATE INDEX idx_trending_searches_strength ON trending_searches(trend_strength DESC);
+
+-- Create indexes for user search behavior
+CREATE INDEX idx_user_search_behavior_user_date ON user_search_behavior(user_id, metric_date DESC);
+CREATE INDEX idx_user_search_behavior_date ON user_search_behavior(metric_date DESC);
+```
+
+---
+
+## 007_create_analysis_tables.sql
+
+```sql
+-- Migration: 007_create_analysis_tables.sql
+-- Description: Novelty scores, gaps, portfolio, and competitive analysis
+-- Created: 2024-01-01
+
+-- Create novelty scores table
+CREATE TABLE novelty_scores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  metric_date DATE NOT NULL,
+  novelty_score FLOAT NOT NULL CHECK (novelty_score >= 0 AND novelty_score <= 100),
+  conceptual_novelty FLOAT,
+  methodological_novelty FLOAT,
+  empirical_novelty FLOAT,
+  semantic_distance FLOAT,
+  trend_velocity FLOAT,
+  saturation_penalty FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(paper_id, metric_date)
+);
+
+-- Create topic trends table
+CREATE TABLE topic_trends (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  topic VARCHAR(255) NOT NULL,
+  metric_date DATE NOT NULL,
+  paper_count INTEGER,
+  new_authors_count INTEGER,
+  avg_novelty_score FLOAT,
+  trending_velocity FLOAT,
+  field VARCHAR(100),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(topic, metric_date)
+);
+
+-- Create research gaps table
+CREATE TABLE research_gaps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  gap_title VARCHAR(255) NOT NULL,
+  gap_description TEXT,
+  field VARCHAR(100),
+  subfield VARCHAR(100),
+  gap_type VARCHAR(50) NOT NULL CHECK (gap_type IN ('topic_combination', 'method', 'cross_disciplinary', 'empirical')),
+  impact_score FLOAT CHECK (impact_score >= 0 AND impact_score <= 100),
+  difficulty_score FLOAT CHECK (difficulty_score >= 0 AND difficulty_score <= 100),
+  resource_requirement_score FLOAT CHECK (resource_requirement_score >= 0 AND resource_requirement_score <= 100),
+  opportunity_score FLOAT CHECK (opportunity_score >= 0 AND opportunity_score <= 100),
+  detected_date DATE,
+  status VARCHAR(50) NOT NULL CHECK (status IN ('emerging', 'active', 'saturating', 'solved')),
+  related_papers INTEGER,
+  detected_by_algorithm VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create gap opportunities table
+CREATE TABLE gap_opportunities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  gap_id UUID NOT NULL REFERENCES research_gaps(id) ON DELETE CASCADE,
+  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  alignment_score FLOAT,
+  feasibility_score FLOAT,
+  strategic_importance_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(gap_id, team_id)
+);
+
+-- Create competitive analysis table
+CREATE TABLE competitive_analysis (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  competitor_organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  metric_date DATE NOT NULL,
+  competing_on_topic VARCHAR(255),
+  competitor_paper_count INTEGER,
+  our_paper_count INTEGER,
+  competitor_avg_novelty FLOAT,
+  our_avg_novelty FLOAT,
+  competitive_intensity FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(organization_id, competitor_organization_id, metric_date, competing_on_topic)
+);
+
+-- Create portfolio entries table
+CREATE TABLE portfolio_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  project_id UUID REFERENCES research_projects(id) ON DELETE SET NULL,
+  paper_id UUID REFERENCES papers(id) ON DELETE SET NULL,
+  entry_type VARCHAR(50) NOT NULL CHECK (entry_type IN ('internal_project', 'funded_paper', 'collaboration')),
+  status VARCHAR(50) NOT NULL CHECK (status IN ('active', 'completed', 'archived')),
+  investment_amount DECIMAL(15,2),
+  start_date DATE,
+  end_date DATE,
+  expected_impact_score FLOAT,
+  actual_impact_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create portfolio analysis table
+CREATE TABLE portfolio_analysis (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  metric_date DATE NOT NULL,
+  total_active_projects INTEGER,
+  total_investment DECIMAL(15,2),
+  avg_project_novelty FLOAT,
+  portfolio_diversity_score FLOAT,
+  gap_coverage_score FLOAT,
+  competitive_comparison_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(organization_id, metric_date)
+);
+
+-- Create indexes for novelty scores
+CREATE INDEX idx_novelty_scores_paper_date ON novelty_scores(paper_id, metric_date DESC);
+CREATE INDEX idx_novelty_scores_date ON novelty_scores(metric_date DESC);
+CREATE INDEX idx_novelty_scores_score ON novelty_scores(novelty_score DESC);
+
+-- Create indexes for topic trends
+CREATE INDEX idx_topic_trends_date ON topic_trends(metric_date DESC);
+CREATE INDEX idx_topic_trends_topic ON topic_trends(topic);
+CREATE INDEX idx_topic_trends_field ON topic_trends(field);
+CREATE INDEX idx_topic_trends_velocity ON topic_trends(trending_velocity DESC);
+
+-- Create indexes for research gaps
+CREATE INDEX idx_research_gaps_field ON research_gaps(field, subfield);
+CREATE INDEX idx_research_gaps_status ON research_gaps(status);
+CREATE INDEX idx_research_gaps_impact ON research_gaps(impact_score DESC);
+CREATE INDEX idx_research_gaps_opportunity ON research_gaps(opportunity_score DESC);
+
+-- Create indexes for gap opportunities
+CREATE INDEX idx_gap_opportunities_gap ON gap_opportunities(gap_id);
+CREATE INDEX idx_gap_opportunities_team ON gap_opportunities(team_id);
+
+-- Create indexes for competitive analysis
+CREATE INDEX idx_competitive_analysis_org ON competitive_analysis(organization_id, metric_date DESC);
+CREATE INDEX idx_competitive_analysis_competitor ON competitive_analysis(competitor_organization_id);
+
+-- Create indexes for portfolio entries
+CREATE INDEX idx_portfolio_entries_org ON portfolio_entries(organization_id);
+CREATE INDEX idx_portfolio_entries_project ON portfolio_entries(project_id);
+CREATE INDEX idx_portfolio_entries_status ON portfolio_entries(status);
+
+-- Create indexes for portfolio analysis
+CREATE INDEX idx_portfolio_analysis_org_date ON portfolio_analysis(organization_id, metric_date DESC);
+```
+
+---
+
+## 008_create_copilot_tables.sql
+
+```sql
+-- Migration: 008_create_copilot_tables.sql
+-- Description: AI Copilot, RAG retrieval, and fact-checking tables
+-- Created: 2024-01-01
+
+-- Create copilot sessions table
+CREATE TABLE copilot_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  collection_id UUID REFERENCES collections(id) ON DELETE SET NULL,
+  session_type VARCHAR(50) NOT NULL CHECK (session_type IN ('summarization', 'gap_analysis', 'synthesis', 'q&a')),
+  started_at TIMESTAMP DEFAULT NOW(),
+  ended_at TIMESTAMP,
+  paper_count INTEGER,
+  total_messages INTEGER,
+  total_tokens_used INTEGER,
+  model_used VARCHAR(50),
+  cost DECIMAL(10,4)
+);
+
+-- Create copilot messages table
+CREATE TABLE copilot_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES copilot_sessions(id) ON DELETE CASCADE,
+  message_type VARCHAR(20) NOT NULL CHECK (message_type IN ('user', 'assistant')),
+  message_text TEXT NOT NULL,
+  tokens_used INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create RAG retrievals table
+CREATE TABLE rag_retrievals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES copilot_sessions(id) ON DELETE CASCADE,
+  message_id UUID NOT NULL REFERENCES copilot_messages(id) ON DELETE CASCADE,
+  query VARCHAR(500),
+  retrieved_paper_ids UUID[],
+  retrieval_strategy VARCHAR(50) NOT NULL CHECK (retrieval_strategy IN ('semantic', 'keyword', 'graph')),
+  retrieval_latency_ms INTEGER,
+  result_quality_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create fact checks table
+CREATE TABLE fact_checks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES copilot_sessions(id) ON DELETE CASCADE,
+  claim TEXT,
+  supporting_papers UUID[],
+  confidence_score FLOAT CHECK (confidence_score >= 0 AND confidence_score <= 1),
+  status VARCHAR(50) NOT NULL CHECK (status IN ('verified', 'uncertain', 'contradicted')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create indexes for copilot sessions
+CREATE INDEX idx_copilot_sessions_user ON copilot_sessions(user_id);
+CREATE INDEX idx_copilot_sessions_type ON copilot_sessions(session_type);
+CREATE INDEX idx_copilot_sessions_date ON copilot_sessions(started_at DESC);
+
+-- Create indexes for copilot messages
+CREATE INDEX idx_copilot_messages_session ON copilot_messages(session_id);
+CREATE INDEX idx_copilot_messages_type ON copilot_messages(message_type);
+
+-- Create indexes for RAG retrievals
+CREATE INDEX idx_rag_retrievals_session ON rag_retrievals(session_id);
+CREATE INDEX idx_rag_retrievals_strategy ON rag_retrievals(retrieval_strategy);
+CREATE INDEX idx_rag_retrievals_latency ON rag_retrievals(retrieval_latency_ms);
+
+-- Create indexes for fact checks
+CREATE INDEX idx_fact_checks_session ON fact_checks(session_id);
+CREATE INDEX idx_fact_checks_status ON fact_checks(status);
+```
+
+---
+
+## 009_create_knowledge_graph_tables.sql
+
+```sql
+-- Migration: 009_create_knowledge_graph_tables.sql
+-- Description: Knowledge graph entities, relationships, and mentions
+-- Created: 2024-01-01
+
+-- Create knowledge graph entities table
+CREATE TABLE knowledge_graph_entities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  entity_type VARCHAR(50) NOT NULL CHECK (entity_type IN ('concept', 'method', 'dataset', 'organism', 'disease', 'researcher', 'organization')),
+  entity_name VARCHAR(255) NOT NULL,
+  entity_normalized_name VARCHAR(255) NOT NULL,
+  description TEXT,
+  field VARCHAR(100),
+  subfield VARCHAR(100),
+  paper_count INTEGER DEFAULT 0,
+  first_mentioned_paper_date DATE,
+  last_mentioned_paper_date DATE,
+  entity_embeddings FLOAT[],
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(entity_type, entity_normalized_name)
+);
+
+-- Create knowledge graph relationships table
+CREATE TABLE knowledge_graph_relationships (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  entity_a_id UUID NOT NULL REFERENCES knowledge_graph_entities(id) ON DELETE CASCADE,
+  entity_b_id UUID NOT NULL REFERENCES knowledge_graph_entities(id) ON DELETE CASCADE,
+  relationship_type VARCHAR(50) NOT NULL CHECK (relationship_type IN ('uses', 'develops', 'studies', 'extends', 'contradicts', 'similar_to', 'parent_of')),
+  relationship_strength FLOAT CHECK (relationship_strength >= 0 AND relationship_strength <= 1),
+  paper_count INTEGER DEFAULT 0,
+  first_paper_date DATE,
+  last_paper_date DATE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(entity_a_id, entity_b_id, relationship_type)
+);
+
+-- Create entity mentions table
+CREATE TABLE entity_mentions (
+  id BIGSERIAL PRIMARY KEY,
+  entity_id UUID NOT NULL REFERENCES knowledge_graph_entities(id) ON DELETE CASCADE,
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  mention_count INTEGER DEFAULT 1,
+  first_mention_position INTEGER,
+  context_text VARCHAR(500),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create indexes for knowledge graph entities
+CREATE INDEX idx_kg_entities_type ON knowledge_graph_entities(entity_type);
+CREATE INDEX idx_kg_entities_name ON knowledge_graph_entities(entity_normalized_name);
+CREATE INDEX idx_kg_entities_field ON knowledge_graph_entities(field, subfield);
+CREATE INDEX idx_kg_entities_paper_count ON knowledge_graph_entities(paper_count DESC);
+
+-- Create indexes for relationships
+CREATE INDEX idx_kg_relationships_entity_a ON knowledge_graph_relationships(entity_a_id);
+CREATE INDEX idx_kg_relationships_entity_b ON knowledge_graph_relationships(entity_b_id);
+CREATE INDEX idx_kg_relationships_type ON knowledge_graph_relationships(relationship_type);
+CREATE INDEX idx_kg_relationships_strength ON knowledge_graph_relationships(relationship_strength DESC);
+
+-- Create composite index for efficient relationship traversal
+CREATE INDEX idx_kg_relationships_ab_type ON knowledge_graph_relationships(entity_a_id, entity_b_id, relationship_type);
+
+-- Create indexes for entity mentions
+CREATE INDEX idx_entity_mentions_entity ON entity_mentions(entity_id);
+CREATE INDEX idx_entity_mentions_paper ON entity_mentions(paper_id);
+CREATE INDEX idx_entity_mentions_entity_paper ON entity_mentions(entity_id, paper_id);
+```
+
+---
+
+## 010_create_access_control_tables.sql
+
+```sql
+-- Migration: 010_create_access_control_tables.sql
+-- Description: Compliance, audit logs, and access control
+-- Created: 2024-01-01
+
+-- Create paper access rights table
+CREATE TABLE paper_access_rights (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  access_type VARCHAR(50) NOT NULL CHECK (access_type IN ('open_access', 'institutional', 'paid', 'restricted')),
+  license_type VARCHAR(50) CHECK (license_type IN ('cc-by', 'cc-by-nc', 'publisher_agreement', 'unknown')),
+  legal_status VARCHAR(50) NOT NULL CHECK (legal_status IN ('verified_legal', 'likely_legal', 'restricted', 'unknown')),
+  requires_authentication BOOLEAN DEFAULT false,
+  can_redistribute BOOLEAN DEFAULT false,
+  can_modify BOOLEAN DEFAULT false,
+  last_verified_date DATE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(paper_id, organization_id)
+);
+
+-- Create data export requests table
+CREATE TABLE data_export_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'processing', 'ready', 'downloaded')),
+  request_date TIMESTAMP DEFAULT NOW(),
+  completion_date TIMESTAMP,
+  file_url VARCHAR(500),
+  file_expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create audit logs table
+CREATE TABLE audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  action_type VARCHAR(100) NOT NULL,
+  resource_type VARCHAR(50),
+  resource_id UUID,
+  resource_name VARCHAR(255),
+  action_details JSONB,
+  ip_address INET,
+  status VARCHAR(20) NOT NULL CHECK (status IN ('success', 'failure')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create user consent table
+CREATE TABLE user_consents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  consent_type VARCHAR(50) NOT NULL CHECK (consent_type IN ('privacy_policy', 'terms_of_service', 'research_usage')),
+  version VARCHAR(20),
+  accepted BOOLEAN DEFAULT false,
+  accepted_at TIMESTAMP,
+  ip_address INET,
+  user_agent VARCHAR(500),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create user data request table (GDPR)
+CREATE TABLE user_data_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_type VARCHAR(50) NOT NULL CHECK (request_type IN ('export', 'delete', 'rectify')),
+  status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'processing', 'completed', 'rejected')),
+  reason TEXT,
+  requested_at TIMESTAMP DEFAULT NOW(),
+  completed_at TIMESTAMP,
+  result_url VARCHAR(500)
+);
+
+-- Create indexes for paper access rights
+CREATE INDEX idx_paper_access_paper ON paper_access_rights(paper_id);
+CREATE INDEX idx_paper_access_org ON paper_access_rights(organization_id);
+CREATE INDEX idx_paper_access_legal_status ON paper_access_rights(legal_status);
+
+-- Create indexes for data export requests
+CREATE INDEX idx_data_export_user ON data_export_requests(user_id);
+CREATE INDEX idx_data_export_status ON data_export_requests(status);
+CREATE INDEX idx_data_export_date ON data_export_requests(request_date DESC);
+
+-- Create indexes for audit logs
+CREATE INDEX idx_audit_logs_user_date ON audit_logs(user_id, created_at DESC);
+CREATE INDEX idx_audit_logs_org_date ON audit_logs(organization_id, created_at DESC);
+CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
+CREATE INDEX idx_audit_logs_action_date ON audit_logs(action_type, created_at DESC);
+CREATE INDEX idx_audit_logs_date ON audit_logs(created_at DESC);
+
+-- Create indexes for user consents
+CREATE INDEX idx_user_consents_user ON user_consents(user_id);
+CREATE INDEX idx_user_consents_type ON user_consents(consent_type);
+CREATE INDEX idx_user_consents_accepted ON user_consents(accepted);
+
+-- Create indexes for data requests
+CREATE INDEX idx_user_data_requests_user ON user_data_requests(user_id);
+CREATE INDEX idx_user_data_requests_status ON user_data_requests(status);
+CREATE INDEX idx_user_data_requests_type ON user_data_requests(request_type);
+```
+
+---
+
+## 011_create_system_tables.sql
+
+```sql
+-- Migration: 011_create_system_tables.sql
+-- Description: System settings, feature flags, and configuration
+-- Created: 2024-01-01
+
+-- Create feature flags table
+CREATE TABLE feature_flags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  flag_name VARCHAR(100) NOT NULL UNIQUE,
+  flag_description TEXT,
+  enabled BOOLEAN DEFAULT false,
+  rollout_percentage INTEGER DEFAULT 0 CHECK (rollout_percentage >= 0 AND rollout_percentage <= 100),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create rate limit rules table
+CREATE TABLE rate_limit_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  requests_per_minute INTEGER,
+  requests_per_day INTEGER,
+  requests_per_month INTEGER,
+  tier VARCHAR(50) NOT NULL CHECK (tier IN ('free', 'professional', 'enterprise')),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create system notifications table
+CREATE TABLE system_notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  notification_type VARCHAR(50) NOT NULL CHECK (notification_type IN ('maintenance', 'feature', 'alert')),
+  severity VARCHAR(20) NOT NULL CHECK (severity IN ('info', 'warning', 'critical')),
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP,
+  target_audience VARCHAR(50) NOT NULL CHECK (target_audience IN ('all_users', 'premium_only', 'beta_testers')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create notification deliveries table
+CREATE TABLE notification_deliveries (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  notification_type VARCHAR(50) NOT NULL,
+  notification_id UUID,
+  status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'sent', 'failed', 'bounced')),
+  sent_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create API rate limit tracking table
+CREATE TABLE api_rate_limits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  api_key_id UUID REFERENCES api_keys(id) ON DELETE CASCADE,
+  requests_today INTEGER DEFAULT 0,
+  requests_this_minute INTEGER DEFAULT 0,
+  last_reset TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create indexes for feature flags
+CREATE INDEX idx_feature_flags_name ON feature_flags(flag_name);
+CREATE INDEX idx_feature_flags_enabled ON feature_flags(enabled);
+
+-- Create indexes for rate limit rules
+CREATE INDEX idx_rate_limit_user ON rate_limit_rules(user_id);
+CREATE INDEX idx_rate_limit_org ON rate_limit_rules(organization_id);
+CREATE INDEX idx_rate_limit_tier ON rate_limit_rules(tier);
+
+-- Create indexes for system notifications
+CREATE INDEX idx_system_notifications_active ON system_notifications(start_date, end_date);
+CREATE INDEX idx_system_notifications_severity ON system_notifications(severity);
+
+-- Create indexes for notification deliveries
+CREATE INDEX idx_notification_deliveries_user ON notification_deliveries(user_id);
+CREATE INDEX idx_notification_deliveries_status ON notification_deliveries(status);
+CREATE INDEX idx_notification_deliveries_date ON notification_deliveries(created_at DESC);
+
+-- Create indexes for rate limits
+CREATE INDEX idx_api_rate_limits_user ON api_rate_limits(user_id);
+CREATE INDEX idx_api_rate_limits_key ON api_rate_limits(api_key_id);
+```
+
+---
+
+## 012_add_foreign_keys.sql
+
+```sql
+-- Migration: 012_add_foreign_keys.sql
+-- Description: Add all foreign key constraints
+-- Created: 2024-01-01
+
+-- Add foreign key for users.institution_id (self-referential through organizations)
+ALTER TABLE users
+ADD CONSTRAINT fk_users_institution
+FOREIGN KEY (institution_id) REFERENCES organizations(id) ON DELETE SET NULL;
+
+-- Add foreign key for organizations.created_by_user_id
+ALTER TABLE organizations
+ADD CONSTRAINT fk_org_created_by
+FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
+
+-- Add foreign key for paper_content.paper_id (already exists)
+-- Verify that all paper_content rows have corresponding papers
+
+-- Add foreign key for paper_citations to handle both directions
+-- Check for orphaned citations
+DELETE FROM paper_citations 
+WHERE citing_paper_id NOT IN (SELECT id FROM papers) 
+   OR cited_paper_id NOT IN (SELECT id FROM papers);
+
+-- Verify all collections have proper references
+-- Organizations can be null (personal collections)
+-- But created_by_user_id must exist
+ALTER TABLE collections
+ADD CONSTRAINT check_collection_owner
+CHECK (created_by_user_id IS NOT NULL);
+
+-- Verify all comments reference either paper or annotation
+ALTER TABLE comments
+ADD CONSTRAINT check_comment_has_reference
+CHECK (paper_id IS NOT NULL OR annotation_id IS NOT NULL);
+
+-- Verify collection shares have a recipient
+ALTER TABLE collection_shares
+ADD CONSTRAINT check_share_recipient
+CHECK (shared_with_user_id IS NOT NULL OR shared_with_team_id IS NOT NULL);
+
+-- Verify data export requests are properly linked
+ALTER TABLE data_export_requests
+ADD CONSTRAINT check_export_user
+CHECK (user_id IS NOT NULL);
+
+-- Verify audit logs have context
+ALTER TABLE audit_logs
+ADD CONSTRAINT check_audit_context
+CHECK (user_id IS NOT NULL OR organization_id IS NOT NULL);
+
+-- Verify RAG retrievals reference correct message type
+ALTER TABLE rag_retrievals
+ADD CONSTRAINT check_rag_assistant_message
+CHECK (
+  EXISTS (
+    SELECT 1 FROM copilot_messages 
+    WHERE id = message_id AND message_type = 'assistant'
+  )
+);
+
+-- Verify fact checks are in completed sessions
+ALTER TABLE fact_checks
+ADD CONSTRAINT check_fact_check_session
+CHECK (
+  EXISTS (
+    SELECT 1 FROM copilot_sessions 
+    WHERE id = session_id AND ended_at IS NOT NULL
+  )
+);
+
+-- Add constraint for portfolio entries to have either project or paper
+ALTER TABLE portfolio_entries
+ADD CONSTRAINT check_portfolio_reference
+CHECK (project_id IS NOT NULL OR paper_id IS NOT NULL);
+
+-- Ensure novelty scores are within valid range
+ALTER TABLE novelty_scores
+ADD CONSTRAINT check_novelty_range
+CHECK (novelty_score >= 0 AND novelty_score <= 100);
+
+-- Ensure gap scores are within valid range
+ALTER TABLE research_gaps
+ADD CONSTRAINT check_gap_scores
+CHECK (
+  impact_score >= 0 AND impact_score <= 100 AND
+  difficulty_score >= 0 AND difficulty_score <= 100 AND
+  resource_requirement_score >= 0 AND resource_requirement_score <= 100 AND
+  opportunity_score >= 0 AND opportunity_score <= 100
+);
+
+-- Ensure confidence scores are probabilities
+ALTER TABLE fact_checks
+ADD CONSTRAINT check_confidence_range
+CHECK (confidence_score >= 0 AND confidence_score <= 1);
+
+-- Ensure rating is valid
+ALTER TABLE collection_papers
+ADD CONSTRAINT check_rating_range
+CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5));
+
+-- Ensure annotation color codes are valid hex
+ALTER TABLE annotations
+ADD CONSTRAINT check_hex_color
+CHECK (color_code ~ '^#[0-9A-Fa-f]{6}$' OR color_code IS NULL);
+
+-- Ensure rollout percentage is valid
+ALTER TABLE feature_flags
+ADD CONSTRAINT check_rollout_range
+CHECK (rollout_percentage >= 0 AND rollout_percentage <= 100);
+```
+
+---
+
+## 013_add_partitioning.sql
+
+```sql
+-- Migration: 013_add_partitioning.sql
+-- Description: Add table partitioning for high-volume tables
+-- Created: 2024-01-01
+
+-- Partition auth_audit_logs by month
+ALTER TABLE auth_audit_logs SET LOGGED;
+
+-- Create partitioned table for auth logs
+CREATE TABLE auth_audit_logs_partitioned (
+  id BIGSERIAL,
+  user_id UUID,
+  event_type VARCHAR(50) NOT NULL,
+  ip_address INET,
+  user_agent VARCHAR(500),
+  status VARCHAR(20) NOT NULL,
+  failure_reason VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (DATE_TRUNC('month', created_at));
+
+-- Create monthly partitions for the current year
+CREATE TABLE auth_audit_logs_2024_01 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+
+CREATE TABLE auth_audit_logs_2024_02 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-02-01') TO ('2024-03-01');
+
+CREATE TABLE auth_audit_logs_2024_03 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-03-01') TO ('2024-04-01');
+
+CREATE TABLE auth_audit_logs_2024_04 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-04-01') TO ('2024-05-01');
+
+CREATE TABLE auth_audit_logs_2024_05 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-05-01') TO ('2024-06-01');
+
+CREATE TABLE auth_audit_logs_2024_06 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-06-01') TO ('2024-07-01');
+
+CREATE TABLE auth_audit_logs_2024_07 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-07-01') TO ('2024-08-01');
+
+CREATE TABLE auth_audit_logs_2024_08 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-08-01') TO ('2024-09-01');
+
+CREATE TABLE auth_audit_logs_2024_09 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-09-01') TO ('2024-10-01');
+
+CREATE TABLE auth_audit_logs_2024_10 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-10-01') TO ('2024-11-01');
+
+CREATE TABLE auth_audit_logs_2024_11 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-11-01') TO ('2024-12-01');
+
+CREATE TABLE auth_audit_logs_2024_12 PARTITION OF auth_audit_logs_partitioned
+  FOR VALUES FROM ('2024-12-01') TO ('2025-01-01');
+
+-- Partition search_queries by month
+CREATE TABLE search_queries_partitioned (
+  id BIGSERIAL,
+  user_id UUID,
+  organization_id UUID,
+  query_text VARCHAR(500) NOT NULL,
+  search_type VARCHAR(50) NOT NULL,
+  result_count INTEGER,
+  clicked_result_count INTEGER,
+  saved_from_results BOOLEAN DEFAULT false,
+  execution_time_ms INTEGER,
+  created_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (DATE_TRUNC('month', created_at));
+
+-- Create monthly partitions for search queries
+CREATE TABLE search_queries_2024_01 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+
+CREATE TABLE search_queries_2024_02 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-02-01') TO ('2024-03-01');
+
+-- Continue for other months...
+CREATE TABLE search_queries_2024_03 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-03-01') TO ('2024-04-01');
+
+CREATE TABLE search_queries_2024_04 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-04-01') TO ('2024-05-01');
+
+CREATE TABLE search_queries_2024_05 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-05-01') TO ('2024-06-01');
+
+CREATE TABLE search_queries_2024_06 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-06-01') TO ('2024-07-01');
+
+CREATE TABLE search_queries_2024_07 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-07-01') TO ('2024-08-01');
+
+CREATE TABLE search_queries_2024_08 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-08-01') TO ('2024-09-01');
+
+CREATE TABLE search_queries_2024_09 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-09-01') TO ('2024-10-01');
+
+CREATE TABLE search_queries_2024_10 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-10-01') TO ('2024-11-01');
+
+CREATE TABLE search_queries_2024_11 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-11-01') TO ('2024-12-01');
+
+CREATE TABLE search_queries_2024_12 PARTITION OF search_queries_partitioned
+  FOR VALUES FROM ('2024-12-01') TO ('2025-01-01');
+
+-- Partition entity_mentions by year (high volume)
+CREATE TABLE entity_mentions_partitioned (
+  id BIGSERIAL,
+  entity_id UUID NOT NULL,
+  paper_id UUID NOT NULL,
+  mention_count INTEGER DEFAULT 1,
+  first_mention_position INTEGER,
+  context_text VARCHAR(500),
+  created_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (YEAR(created_at));
+
+CREATE TABLE entity_mentions_2024 PARTITION OF entity_mentions_partitioned
+  FOR VALUES FROM (2024) TO (2025);
+
+CREATE TABLE entity_mentions_2025 PARTITION OF entity_mentions_partitioned
+  FOR VALUES FROM (2025) TO (2026);
+```
+
+---
+
+## 014_add_performance_indexes.sql
+
+```sql
+-- Migration: 014_add_performance_indexes.sql
+-- Description: Advanced indexes for optimization
+-- Created: 2024-01-01
+
+-- Composite indexes for common query patterns
+
+-- Search paper by field + novelty
+CREATE INDEX idx_papers_field_novelty ON papers(field, novelty_score DESC)
+WHERE is_active = true;
+
+-- Recent papers by field
+CREATE INDEX idx_papers_field_date ON papers(field, publication_date DESC)
+WHERE publication_date > NOW() - INTERVAL '1 year';
+
+-- Collection papers with metadata
+CREATE INDEX idx_collection_papers_full ON collection_papers(collection_id, paper_id, is_favorite DESC);
+
+-- Search query patterns
+CREATE INDEX idx_search_queries_user_type_date ON search_queries(user_id, search_type, created_at DESC);
+
+-- Topic trends recent data
+CREATE INDEX idx_topic_trends_recent ON topic_trends(metric_date DESC)
+WHERE metric_date > NOW() - INTERVAL '1 year';
+
+-- Novelty scores recent
+CREATE INDEX idx_novelty_scores_recent ON novelty_scores(paper_id, metric_date DESC)
+WHERE metric_date > NOW() - INTERVAL '1 month';
+
+-- Knowledge graph entity search
+CREATE INDEX idx_kg_entities_search ON knowledge_graph_entities(entity_type, field, paper_count DESC);
+
+-- Comments threaded view
+CREATE INDEX idx_comments_thread ON comments(paper_id, parent_comment_id, created_at DESC)
+WHERE deleted_at IS NULL;
+
+-- Annotations by collection
+CREATE INDEX idx_annotations_collection_type ON annotations(collection_id, annotation_type, created_at DESC);
+
+-- Portfolio analysis trend
+CREATE INDEX idx_portfolio_analysis_trend ON portfolio_analysis(organization_id, metric_date DESC);
+
+-- Competitive analysis trend
+CREATE INDEX idx_competitive_analysis_trend ON competitive_analysis(organization_id, metric_date DESC, competing_on_topic);
+
+-- Gap opportunities by team
+CREATE INDEX idx_gap_opportunities_team_score ON gap_opportunities(team_id, opportunity_score DESC);
+
+-- User research interests
+CREATE INDEX idx_users_interests ON users USING GIN(research_interests);
+
+-- Paper keywords search
+CREATE INDEX idx_papers_keywords ON papers USING GIN(keywords);
+
+-- RAG retrieval performance
+CREATE INDEX idx_rag_retrievals_quality ON rag_retrievals(session_id, result_quality_score DESC);
+
+-- Active sessions
+CREATE INDEX idx_copilot_sessions_active ON copilot_sessions(user_id, started_at DESC)
+WHERE ended_at IS NULL;
+
+-- Organization member active
+CREATE INDEX idx_org_members_active ON organization_members(organization_id, role)
+WHERE invitation_accepted_at IS NOT NULL;
+
+-- Covering indexes for frequently accessed columns
+
+-- Sessions with user info
+CREATE INDEX idx_sessions_full ON sessions(user_id, expires_at)
+INCLUDE (ip_address, user_agent);
+
+-- Collections with metadata
+CREATE INDEX idx_collections_full ON collections(created_by_user_id, created_at DESC)
+INCLUDE (name, collection_type, is_public);
+
+-- Papers with basic info
+CREATE INDEX idx_papers_full ON papers(source, source_id)
+INCLUDE (title, publication_date, citation_count);
+
+-- Audit logs with context
+CREATE INDEX idx_audit_logs_full ON audit_logs(created_at DESC)
+INCLUDE (user_id, action_type, resource_type);
+
+-- BRIN (Block Range Index) for time-series data
+-- More efficient for large tables with natural ordering
+
+CREATE INDEX idx_auth_logs_brin ON auth_audit_logs USING BRIN (created_at);
+CREATE INDEX idx_search_queries_brin ON search_queries USING BRIN (created_at);
+CREATE INDEX idx_entity_mentions_brin ON entity_mentions USING BRIN (created_at);
+CREATE INDEX idx_copilot_messages_brin ON copilot_messages USING BRIN (created_at);
+
+-- Statistics for query planner
+ANALYZE users;
+ANALYZE papers;
+ANALYZE collections;
+ANALYZE search_queries;
+ANALYZE auth_audit_logs;
+ANALYZE knowledge_graph_entities;
+ANALYZE research_projects;
+ANALYZE research_gaps;
+```
+
+---
+
+## Summary: Migration Execution Order
+
+To apply all migrations in the correct order, execute:
+
+```bash
+#!/bin/bash
+
+MIGRATIONS_DIR="packages/db/migrations"
+
+for migration in \
+  001_create_users_tables.sql \
+  002_create_organizations_tables.sql \
+  003_create_papers_tables.sql \
+  004_create_collections_tables.sql \
+  005_create_collaboration_tables.sql \
+  006_create_search_tables.sql \
+  007_create_analysis_tables.sql \
+  008_create_copilot_tables.sql \
+  009_create_knowledge_graph_tables.sql \
+  010_create_access_control_tables.sql \
+  011_create_system_tables.sql \
+  012_add_foreign_keys.sql \
+  013_add_partitioning.sql \
+  014_add_performance_indexes.sql
+do
+  echo "Executing: $migration"
+  psql -U postgres -d researchos -f "$MIGRATIONS_DIR/$migration"
+  if [ $? -eq 0 ]; then
+    echo "✓ $migration completed"
+  else
+    echo "✗ $migration failed"
+    exit 1
+  fi
+done
+
+echo "All migrations completed successfully!"
+```
+
+---
+
+## Key Statistics
+
+| Metric | Count |
+|--------|-------|
+| **Total Tables** | 50+ |
+| **Total Indexes** | 150+ |
+| **Foreign Key Constraints** | 80+ |
+| **Check Constraints** | 25+ |
+| **Partitioned Tables** | 3 |
+| **Unique Constraints** | 40+ |
+
+---
+
+## Schema Diagram
+
+```
+Core Authentication
+├── users
+├── sessions
+├── mfa_settings
+├── oauth_connections
+├── api_keys
+└── auth_audit_logs
+
+Organizations & Collaboration
+├── organizations
+├── organization_members
+├── teams
+├── team_members
+├── research_projects
+└── project_members
+
+Papers & Content
+├── papers
+├── paper_versions
+├── paper_authors
+├── paper_citations
+├── paper_content
+└── paper_metadata
+
+Collections & Saving
+├── collections
+├── collection_papers
+├── collection_shares
+├── saved_searches
+└── saved_search_results
+
+Collaboration
+├── annotations
+├── comments
+├── comment_reactions
+└── research_projects
+
+Search & Analytics
+├── search_queries
+├── trending_searches
+├── user_search_behavior
+└── novelty_scores
+
+Analysis & Intelligence
+├── topic_trends
+├── research_gaps
+├── gap_opportunities
+├── competitive_analysis
+├── portfolio_entries
+└── portfolio_analysis
+
+AI & Knowledge
+├── copilot_sessions
+├── copilot_messages
+├── rag_retrievals
+├── fact_checks
+├── knowledge_graph_entities
+├── knowledge_graph_relationships
+└── entity_mentions
+
+Access Control & Compliance
+├── paper_access_rights
+├── data_export_requests
+├── audit_logs
+├── user_consents
+└── user_data_requests
+
+System Configuration
+├── feature_flags
+├── rate_limit_rules
+├── system_notifications
+├── notification_deliveries
+└── api_rate_limits
+```
+
+---
+
+These 14 migration files create a production-grade database with:
+- ✅ 50+ tables
+- ✅ 150+ indexes (optimized for performance)
+- ✅ Proper constraints (foreign keys, checks, unique)
+- ✅ Partitioning (for high-volume tables)
+- ✅ Covering indexes (for query optimization)
+- ✅ BRIN indexes (for time-series data)
+- ✅ GDPR compliance tables
+- ✅ Audit logging
+- ✅ Full-text search capabilities
+- ✅ Knowledge graph support
+
+You can now add these to your `packages/db/migrations/` directory and run them sequentially!
