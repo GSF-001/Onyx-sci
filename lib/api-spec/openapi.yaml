@@ -3,20 +3,36 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: OASIS Research API - AI-powered research intelligence platform
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: search
+    description: Semantic search operations
+  - name: copilot
+    description: AI Copilot operations
+  - name: knowledge-graph
+    description: Knowledge graph operations
+  - name: gap-discovery
+    description: Research gap discovery
+  - name: trends
+    description: Novelty and trend analysis
+  - name: collaborate
+    description: Collaboration features
+  - name: papers
+    description: Paper management
+  - name: collections
+    description: Collections management
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +40,586 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── SEMANTIC SEARCH ────────────────────────────────────────────────────────
+  /search:
+    post:
+      operationId: semanticSearch
+      tags: [search]
+      summary: Search papers using natural language
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchInput"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+
+  /search/trending:
+    get:
+      operationId: getTrendingSearches
+      tags: [search]
+      summary: Get trending search queries
+      responses:
+        "200":
+          description: Trending searches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrendingQuery"
+
+  /search/suggestions:
+    get:
+      operationId: getSearchSuggestions
+      tags: [search]
+      summary: Get search query suggestions
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  # ─── AI COPILOT ─────────────────────────────────────────────────────────────
+  /copilot/ask:
+    post:
+      operationId: askCopilot
+      tags: [copilot]
+      summary: Ask a research question to the AI copilot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CopilotInput"
+      responses:
+        "200":
+          description: AI answer with citations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CopilotResponse"
+
+  /copilot/summarize:
+    post:
+      operationId: summarizePaper
+      tags: [copilot]
+      summary: Summarize a paper or abstract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SummarizeInput"
+      responses:
+        "200":
+          description: Paper summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummarizeResponse"
+
+  /copilot/sessions:
+    get:
+      operationId: getCopilotSessions
+      tags: [copilot]
+      summary: Get recent copilot sessions
+      responses:
+        "200":
+          description: Sessions list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CopilotSession"
+    post:
+      operationId: createCopilotSession
+      tags: [copilot]
+      summary: Create a new copilot session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CopilotSessionInput"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CopilotSession"
+
+  /copilot/sessions/{id}/messages:
+    get:
+      operationId: getCopilotMessages
+      tags: [copilot]
+      summary: Get messages in a copilot session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CopilotMessage"
+
+  # ─── KNOWLEDGE GRAPH ─────────────────────────────────────────────────────────
+  /knowledge-graph/explore:
+    post:
+      operationId: exploreGraph
+      tags: [knowledge-graph]
+      summary: Explore the knowledge graph for a concept
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GraphExploreInput"
+      responses:
+        "200":
+          description: Graph data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GraphData"
+
+  /knowledge-graph/concepts:
+    get:
+      operationId: searchConcepts
+      tags: [knowledge-graph]
+      summary: Search for concepts in the knowledge graph
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Concepts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Concept"
+
+  /knowledge-graph/concept/{id}/related:
+    get:
+      operationId: getRelatedConcepts
+      tags: [knowledge-graph]
+      summary: Get concepts related to a concept
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Related concepts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GraphData"
+
+  # ─── GAP DISCOVERY ───────────────────────────────────────────────────────────
+  /gaps/discover:
+    post:
+      operationId: discoverGaps
+      tags: [gap-discovery]
+      summary: Discover research gaps in a field
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GapDiscoveryInput"
+      responses:
+        "200":
+          description: Research gaps
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GapDiscoveryResponse"
+
+  /gaps/recent:
+    get:
+      operationId: getRecentGaps
+      tags: [gap-discovery]
+      summary: Get recently discovered research gaps
+      responses:
+        "200":
+          description: Recent gaps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchGap"
+
+  /gaps/{id}:
+    get:
+      operationId: getGap
+      tags: [gap-discovery]
+      summary: Get a specific research gap
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Research gap details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchGap"
+
+  # ─── NOVELTY & TRENDS ────────────────────────────────────────────────────────
+  /trends/overview:
+    get:
+      operationId: getTrendsOverview
+      tags: [trends]
+      summary: Get an overview of current research trends
+      parameters:
+        - name: field
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trends overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrendsOverview"
+
+  /trends/analyze:
+    post:
+      operationId: analyzeTrends
+      tags: [trends]
+      summary: Analyze novelty and trends for a research area
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrendAnalysisInput"
+      responses:
+        "200":
+          description: Trend analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrendAnalysisResponse"
+
+  /trends/rising:
+    get:
+      operationId: getRisingTopics
+      tags: [trends]
+      summary: Get rising research topics
+      responses:
+        "200":
+          description: Rising topics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RisingTopic"
+
+  # ─── COLLABORATE ─────────────────────────────────────────────────────────────
+  /collaborate/projects:
+    get:
+      operationId: getProjects
+      tags: [collaborate]
+      summary: Get all research projects
+      responses:
+        "200":
+          description: Projects list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [collaborate]
+      summary: Create a new research project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /collaborate/projects/{id}:
+    get:
+      operationId: getProject
+      tags: [collaborate]
+      summary: Get a project by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    patch:
+      operationId: updateProject
+      tags: [collaborate]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [collaborate]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /collaborate/team:
+    get:
+      operationId: getTeamMembers
+      tags: [collaborate]
+      summary: Get all team members
+      responses:
+        "200":
+          description: Team members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamMember"
+
+  /collaborate/activity:
+    get:
+      operationId: getRecentActivity
+      tags: [collaborate]
+      summary: Get recent team activity feed
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  # ─── PAPERS ─────────────────────────────────────────────────────────────────
+  /papers:
+    get:
+      operationId: getPapers
+      tags: [papers]
+      summary: Get saved papers
+      responses:
+        "200":
+          description: Papers list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Paper"
+
+  /papers/{id}:
+    get:
+      operationId: getPaper
+      tags: [papers]
+      summary: Get a paper by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paper details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Paper"
+
+  /papers/{id}/save:
+    post:
+      operationId: savePaper
+      tags: [papers]
+      summary: Save a paper to library
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Paper"
+
+  # ─── COLLECTIONS ─────────────────────────────────────────────────────────────
+  /collections:
+    get:
+      operationId: getCollections
+      tags: [collections]
+      summary: Get all collections
+      responses:
+        "200":
+          description: Collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Collection"
+    post:
+      operationId: createCollection
+      tags: [collections]
+      summary: Create a collection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionInput"
+      responses:
+        "201":
+          description: Created collection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+
+  /collections/{id}:
+    get:
+      operationId: getCollection
+      tags: [collections]
+      summary: Get a collection by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Collection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+
+  /collections/{id}/papers:
+    post:
+      operationId: addPaperToCollection
+      tags: [collections]
+      summary: Add a paper to a collection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaperCollectionInput"
+      responses:
+        "200":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+
+  # ─── DASHBOARD SUMMARY ───────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [health]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +627,611 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    DashboardStats:
+      type: object
+      properties:
+        totalPapers:
+          type: integer
+        totalSearches:
+          type: integer
+        gapsDiscovered:
+          type: integer
+        collaborators:
+          type: integer
+        savedPapers:
+          type: integer
+        collections:
+          type: integer
+      required: [totalPapers, totalSearches, gapsDiscovered, collaborators, savedPapers, collections]
+
+    # ─── SEARCH SCHEMAS ───────────────────────────────────────────────────────
+    SearchInput:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          minLength: 1
+        field:
+          type: ["string", "null"]
+        limit:
+          type: ["integer", "null"]
+        filters:
+          $ref: "#/components/schemas/SearchFilters"
+
+    SearchFilters:
+      type: object
+      properties:
+        yearFrom:
+          type: ["integer", "null"]
+        yearTo:
+          type: ["integer", "null"]
+        openAccess:
+          type: ["boolean", "null"]
+        minCitations:
+          type: ["integer", "null"]
+
+    SearchResponse:
+      type: object
+      required: [papers, total, query]
+      properties:
+        papers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Paper"
+        total:
+          type: integer
+        query:
+          type: string
+        aiSummary:
+          type: ["string", "null"]
+
+    TrendingQuery:
+      type: object
+      required: [query, count]
+      properties:
+        query:
+          type: string
+        count:
+          type: integer
+        field:
+          type: ["string", "null"]
+
+    # ─── PAPER SCHEMA ─────────────────────────────────────────────────────────
+    Paper:
+      type: object
+      required: [id, title, authors, year, abstract]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        year:
+          type: integer
+        abstract:
+          type: string
+        journal:
+          type: ["string", "null"]
+        citationCount:
+          type: ["integer", "null"]
+        doi:
+          type: ["string", "null"]
+        arxivId:
+          type: ["string", "null"]
+        url:
+          type: ["string", "null"]
+        field:
+          type: ["string", "null"]
+        keywords:
+          type: array
+          items:
+            type: string
+        noveltyScore:
+          type: ["number", "null"]
+        relevanceScore:
+          type: ["number", "null"]
+        isOpenAccess:
+          type: boolean
+        savedAt:
+          type: ["string", "null"]
+
+    # ─── COPILOT SCHEMAS ──────────────────────────────────────────────────────
+    CopilotInput:
+      type: object
+      required: [question]
+      properties:
+        question:
+          type: string
+        sessionId:
+          type: ["string", "null"]
+        context:
+          type: ["string", "null"]
+
+    CopilotResponse:
+      type: object
+      required: [answer, citations]
+      properties:
+        answer:
+          type: string
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
+        sessionId:
+          type: string
+        followUpQuestions:
+          type: array
+          items:
+            type: string
+        papersUsed:
+          type: integer
+
+    Citation:
+      type: object
+      required: [id, title, authors, year]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        year:
+          type: integer
+        journal:
+          type: ["string", "null"]
+        url:
+          type: ["string", "null"]
+
+    SummarizeInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+        paperId:
+          type: ["string", "null"]
+        mode:
+          type: string
+          enum: [brief, detailed, technical, layperson]
+
+    SummarizeResponse:
+      type: object
+      required: [summary, keyFindings]
+      properties:
+        summary:
+          type: string
+        keyFindings:
+          type: array
+          items:
+            type: string
+        limitations:
+          type: array
+          items:
+            type: string
+        futureDirections:
+          type: array
+          items:
+            type: string
+        readingTime:
+          type: integer
+
+    CopilotSession:
+      type: object
+      required: [id, title, createdAt, messageCount]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+        messageCount:
+          type: integer
+        lastMessage:
+          type: ["string", "null"]
+
+    CopilotSessionInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+
+    CopilotMessage:
+      type: object
+      required: [id, role, content, createdAt]
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        createdAt:
+          type: string
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
+
+    # ─── KNOWLEDGE GRAPH SCHEMAS ──────────────────────────────────────────────
+    GraphExploreInput:
+      type: object
+      required: [concept]
+      properties:
+        concept:
+          type: string
+        depth:
+          type: ["integer", "null"]
+        field:
+          type: ["string", "null"]
+
+    GraphData:
+      type: object
+      required: [nodes, edges]
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/GraphNode"
+        edges:
+          type: array
+          items:
+            $ref: "#/components/schemas/GraphEdge"
+        centralConcept:
+          type: ["string", "null"]
+        insights:
+          type: ["string", "null"]
+
+    GraphNode:
+      type: object
+      required: [id, label, type, weight]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum: [concept, method, dataset, researcher, institution]
+        weight:
+          type: number
+        description:
+          type: ["string", "null"]
+        paperCount:
+          type: ["integer", "null"]
+        x:
+          type: ["number", "null"]
+        y:
+          type: ["number", "null"]
+
+    GraphEdge:
+      type: object
+      required: [source, target, relationship, strength]
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+        relationship:
+          type: string
+        strength:
+          type: number
+
+    Concept:
+      type: object
+      required: [id, name, type, paperCount]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        paperCount:
+          type: integer
+        description:
+          type: ["string", "null"]
+
+    # ─── GAP DISCOVERY SCHEMAS ────────────────────────────────────────────────
+    GapDiscoveryInput:
+      type: object
+      required: [field]
+      properties:
+        field:
+          type: string
+        subfield:
+          type: ["string", "null"]
+        context:
+          type: ["string", "null"]
+
+    GapDiscoveryResponse:
+      type: object
+      required: [gaps, field, analysisId]
+      properties:
+        gaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResearchGap"
+        field:
+          type: string
+        analysisId:
+          type: string
+        summary:
+          type: string
+
+    ResearchGap:
+      type: object
+      required: [id, title, description, impactScore, competitionLevel, difficultyLevel, field]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        impactScore:
+          type: number
+        competitionLevel:
+          type: string
+          enum: [Low, Medium, High]
+        difficultyLevel:
+          type: string
+          enum: [Low, Medium, High]
+        field:
+          type: string
+        relatedPapers:
+          type: integer
+        opportunity:
+          type: ["string", "null"]
+        discoveredAt:
+          type: string
+
+    # ─── TREND SCHEMAS ────────────────────────────────────────────────────────
+    TrendsOverview:
+      type: object
+      required: [risingTopics, emergingMethods, trendingFields, timeseriesData]
+      properties:
+        risingTopics:
+          type: array
+          items:
+            $ref: "#/components/schemas/RisingTopic"
+        emergingMethods:
+          type: array
+          items:
+            type: string
+        trendingFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendingField"
+        timeseriesData:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeseriesPoint"
+        aiInsight:
+          type: ["string", "null"]
+
+    TrendAnalysisInput:
+      type: object
+      required: [topic]
+      properties:
+        topic:
+          type: string
+        yearsBack:
+          type: ["integer", "null"]
+
+    TrendAnalysisResponse:
+      type: object
+      required: [topic, noveltyScore, velocityScore, timeseriesData, keyPapers]
+      properties:
+        topic:
+          type: string
+        noveltyScore:
+          type: number
+        velocityScore:
+          type: number
+        timeseriesData:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeseriesPoint"
+        keyPapers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Paper"
+        insights:
+          type: string
+        predictedGrowth:
+          type: string
+
+    RisingTopic:
+      type: object
+      required: [name, growth, field]
+      properties:
+        name:
+          type: string
+        growth:
+          type: number
+        field:
+          type: string
+        paperCount:
+          type: integer
+        description:
+          type: ["string", "null"]
+
+    TrendingField:
+      type: object
+      required: [name, noveltyScore, paperCount]
+      properties:
+        name:
+          type: string
+        noveltyScore:
+          type: number
+        paperCount:
+          type: integer
+        growthRate:
+          type: number
+
+    TimeseriesPoint:
+      type: object
+      required: [year, value]
+      properties:
+        year:
+          type: integer
+        value:
+          type: number
+        label:
+          type: ["string", "null"]
+
+    # ─── COLLABORATION SCHEMAS ────────────────────────────────────────────────
+    Project:
+      type: object
+      required: [id, name, description, memberCount, paperCount, createdAt, status]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        memberCount:
+          type: integer
+        paperCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, archived, completed]
+        tags:
+          type: array
+          items:
+            type: string
+
+    ProjectInput:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    ProjectUpdate:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        status:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+
+    TeamMember:
+      type: object
+      required: [id, name, email, role, joinedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, member, viewer]
+        avatar:
+          type: ["string", "null"]
+        joinedAt:
+          type: string
+        institution:
+          type: ["string", "null"]
+        paperCount:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [id, type, user, description, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [paper_saved, collection_created, project_created, gap_discovered, search_performed, comment_added]
+        user:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+        relatedId:
+          type: ["string", "null"]
+
+    # ─── COLLECTION SCHEMAS ───────────────────────────────────────────────────
+    Collection:
+      type: object
+      required: [id, name, description, paperCount, isShared, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        paperCount:
+          type: integer
+        isShared:
+          type: boolean
+        createdAt:
+          type: string
+        papers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Paper"
+        tags:
+          type: array
+          items:
+            type: string
+
+    CollectionInput:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        isShared:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+
+    PaperCollectionInput:
+      type: object
+      required: [paperId]
+      properties:
+        paperId:
+          type: string
