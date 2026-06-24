@@ -95,8 +95,8 @@ export default function CopilotPage() {
   return (
     <MainLayout>
       <div className="flex h-full bg-white">
-        {/* Sessions sidebar */}
-        <div className="w-60 border-r border-neutral-100 bg-neutral-50 flex flex-col flex-shrink-0">
+        {/* Sessions sidebar — hidden on mobile */}
+        <div className="hidden md:flex w-60 border-r border-neutral-100 bg-neutral-50 flex-col flex-shrink-0">
           <div className="p-3 border-b border-neutral-100">
             <button
               onClick={startNewChat}

@@ -148,10 +148,7 @@ export default function Home() {
       <header className="sticky top-0 z-30 bg-white border-b border-neutral-100 px-5 py-4 flex items-center justify-between">
         <button onClick={() => setLocation("/")} className="flex items-center gap-2.5">
           <OasisLogo size={28} color="#111" />
-          <div className="leading-none">
-            <div className="font-bold tracking-[0.18em] text-xs text-neutral-900">OASIS</div>
-            <div className="text-[8px] tracking-[0.22em] text-neutral-400 font-medium">RESEARCH</div>
-          </div>
+          <span className="font-bold text-[13px] tracking-tight text-neutral-900">OASIS-Research</span>
         </button>
         <div className="flex items-center gap-3">
           <button className="text-neutral-400 hover:text-neutral-700 transition-colors">

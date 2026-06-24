@@ -7,6 +7,11 @@ interface OasisLogoProps {
 }
 
 export default function OasisLogo({ size = 32, color = "currentColor", className = "" }: OasisLogoProps) {
+  const cx = 24;
+  const cy = 24;
+  const outerR = 16;
+  const innerR = 10;
+
   return (
     <svg
       width={size}
@@ -15,33 +20,20 @@ export default function OasisLogo({ size = 32, color = "currentColor", className
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      aria-label="OASIS-Research logo"
     >
-      {/* Outer ring - split by diagonal */}
-      <path
-        d="M24 6 A18 18 0 1 1 6 24"
-        stroke={color}
-        strokeWidth="2.8"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M6 24 A18 18 0 0 1 24 6"
-        stroke={color}
-        strokeWidth="2.8"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.35"
-      />
+      {/* Outer thick ring */}
+      <circle cx={cx} cy={cy} r={outerR} stroke={color} strokeWidth="3.2" fill="none" />
       {/* Inner ring */}
-      <circle cx="24" cy="24" r="10" stroke={color} strokeWidth="2" fill="none" />
-      {/* Diagonal line (accretion disk / orbital plane) */}
+      <circle cx={cx} cy={cy} r={innerR} stroke={color} strokeWidth="2.2" fill="none" />
+      {/* Diagonal slash — lower-left to upper-right, extending well past both rings */}
       <line
-        x1="2"
-        y1="34"
-        x2="46"
-        y2="14"
+        x1="3"
+        y1="36"
+        x2="45"
+        y2="12"
         stroke={color}
-        strokeWidth="2.2"
+        strokeWidth="2.8"
         strokeLinecap="round"
       />
     </svg>
