@@ -3,90 +3,139 @@ import { chatCompletion } from "../lib/groq";
 
 const router = Router();
 
-// Semantic search using GROQ AI to simulate paper search
+const SS_BASE = "https://api.semanticscholar.org/graph/v1";
+const SS_FIELDS = "title,authors,year,abstract,citationCount,isOpenAccess,externalIds,journal,venue,openAccessPdf";
+
+interface SSPaper {
+  paperId: string;
+  title: string;
+  authors: { name: string }[];
+  year: number | null;
+  abstract: string | null;
+  citationCount: number;
+  isOpenAccess: boolean;
+  externalIds: { DOI?: string; ArXiv?: string } | null;
+  journal: { name: string; volume?: string; pages?: string } | null;
+  venue: string | null;
+  openAccessPdf: { url: string } | null;
+}
+
+async function searchSemanticScholar(query: string, limit = 10, offset = 0) {
+  const url = `${SS_BASE}/paper/search?query=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}&fields=${SS_FIELDS}`;
+  const res = await fetch(url, {
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) throw new Error(`Semantic Scholar API error: ${res.status}`);
+  const data = await res.json() as { total: number; data: SSPaper[] };
+  return data;
+}
+
+function formatSSPaper(p: SSPaper, index: number) {
+  const doi = p.externalIds?.DOI;
+  const arxiv = p.externalIds?.ArXiv;
+  const url = doi
+    ? `https://doi.org/${doi}`
+    : arxiv
+    ? `https://arxiv.org/abs/${arxiv}`
+    : `https://www.semanticscholar.org/paper/${p.paperId}`;
+  return {
+    id: p.paperId || `ss_${index}`,
+    title: p.title ?? "Untitled",
+    authors: p.authors.map((a) => a.name),
+    year: p.year ?? null,
+    abstract: p.abstract ?? "",
+    journal: p.journal?.name ?? p.venue ?? null,
+    citationCount: p.citationCount ?? 0,
+    doi: doi ?? null,
+    isOpenAccess: p.isOpenAccess ?? false,
+    url,
+    pdfUrl: p.openAccessPdf?.url ?? null,
+    noveltyScore: null,
+    relevanceScore: null,
+  };
+}
+
+// Semantic search — real papers from Semantic Scholar, AI summary from GROQ
 router.post("/", async (req, res) => {
-  const { query, field, limit = 10, filters } = req.body as {
+  const { query, limit = 10, offset = 0, filters } = req.body as {
     query: string;
-    field?: string;
     limit?: number;
+    offset?: number;
     filters?: { yearFrom?: number; yearTo?: number; openAccess?: boolean; minCitations?: number };
   };
 
+  if (!query?.trim()) {
+    return res.status(400).json({ error: "Query is required" });
+  }
+
   try {
-    const prompt = `You are a scientific literature search engine. Generate ${limit} realistic research paper results for the query: "${query}"${field ? ` in the field of ${field}` : ""}.
+    const ssData = await searchSemanticScholar(query, Math.min(limit, 20), offset);
+    let papers = ssData.data.map(formatSSPaper);
 
-For each paper, generate a JSON array with exactly this structure:
-{
-  "papers": [
-    {
-      "id": "paper_<unique_id>",
-      "title": "Realistic paper title",
-      "authors": ["Author One", "Author Two"],
-      "year": 2022,
-      "abstract": "Detailed abstract of 2-3 sentences describing the paper's contribution",
-      "journal": "Nature / Science / PLOS ONE / etc.",
-      "citationCount": 45,
-      "doi": "10.xxxx/xxxxx",
-      "field": "${field || "Computer Science"}",
-      "keywords": ["keyword1", "keyword2", "keyword3"],
-      "noveltyScore": 7.8,
-      "relevanceScore": 9.2,
-      "isOpenAccess": true
-    }
-  ],
-  "aiSummary": "A 2-sentence synthesis of the search results landscape"
-}
+    // Apply filters client-side
+    if (filters?.yearFrom) papers = papers.filter((p) => p.year == null || p.year >= filters.yearFrom!);
+    if (filters?.yearTo) papers = papers.filter((p) => p.year == null || p.year <= filters.yearTo!);
+    if (filters?.openAccess) papers = papers.filter((p) => p.isOpenAccess);
+    if (filters?.minCitations) papers = papers.filter((p) => p.citationCount >= filters.minCitations!);
 
-Generate papers from real research areas. Vary years between ${filters?.yearFrom ?? 2019} and ${filters?.yearTo ?? 2024}. Make abstracts scientifically plausible. Return ONLY valid JSON.`;
-
-    const response = await chatCompletion([{ role: "user", content: prompt }], {
-      temperature: 0.8,
-      maxTokens: 3000,
-    });
-
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("Failed to parse search response");
+    // AI summary (non-blocking — don't fail if GROQ is slow)
+    let aiSummary: string | null = null;
+    try {
+      const titlesSnippet = papers
+        .slice(0, 5)
+        .map((p) => p.title)
+        .join("; ");
+      const summaryRes = await chatCompletion(
+        [
+          {
+            role: "user",
+            content: `In 2 sentences, synthesize the research landscape for the query "${query}" based on these papers: ${titlesSnippet}. Be concise and scientifically precise.`,
+          },
+        ],
+        { temperature: 0.5, maxTokens: 150 }
+      );
+      aiSummary = summaryRes.trim();
+    } catch {
+      // Summary is optional
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
-    res.json({ ...parsed, total: parsed.papers.length, query });
+    res.json({ papers, total: ssData.total ?? papers.length, query, aiSummary });
   } catch (err) {
-    req.log.error({ err }, "Search failed");
-    res.status(500).json({ error: "Search failed" });
+    req.log.error({ err }, "Semantic Scholar search failed");
+    res.status(500).json({ error: "Search failed. Please try again." });
   }
 });
 
-// Trending searches
+// Trending searches (static curated list)
 router.get("/trending", async (_req, res) => {
   res.json([
-    { query: "protein folding with deep learning", count: 1245, field: "Computational Biology" },
-    { query: "large language models in drug discovery", count: 987, field: "Pharmacology" },
+    { query: "protein folding deep learning", count: 1245, field: "Computational Biology" },
+    { query: "large language models drug discovery", count: 987, field: "Pharmacology" },
     { query: "CRISPR gene editing cancer therapy", count: 876, field: "Oncology" },
     { query: "quantum computing error correction", count: 654, field: "Physics" },
-    { query: "transformer architecture multimodal", count: 612, field: "Machine Learning" },
-    { query: "climate change carbon capture materials", count: 541, field: "Environmental Science" },
-    { query: "neuromorphic computing brain-inspired", count: 498, field: "Computer Science" },
+    { query: "transformer multimodal learning", count: 612, field: "Machine Learning" },
+    { query: "climate change carbon capture", count: 541, field: "Environmental Science" },
+    { query: "single cell RNA sequencing", count: 498, field: "Genomics" },
     { query: "mRNA vaccine delivery mechanisms", count: 445, field: "Immunology" },
   ]);
 });
 
-// Search suggestions
+// Autocomplete suggestions
 router.get("/suggestions", async (req, res) => {
   const q = req.query.q as string;
   if (!q || q.length < 2) return res.json([]);
-
-  const suggestions = [
-    `${q} deep learning`,
-    `${q} neural networks`,
-    `${q} machine learning applications`,
-    `${q} systematic review`,
-    `${q} meta-analysis`,
-    `${q} computational methods`,
-    `${q} clinical trials`,
-    `${q} emerging trends`,
-  ].slice(0, 6);
-
+  try {
+    const url = `${SS_BASE}/paper/search/bulk?query=${encodeURIComponent(q)}&limit=5&fields=title`;
+    const r = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      const data = await r.json() as { data: { title: string }[] };
+      return res.json(data.data.map((p) => p.title).filter(Boolean).slice(0, 6));
+    }
+  } catch {
+    // fall through
+  }
+  const suggestions = [`${q} review`, `${q} deep learning`, `${q} clinical study`, `${q} meta-analysis`];
   res.json(suggestions);
 });
 

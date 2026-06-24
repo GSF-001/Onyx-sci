@@ -92,7 +92,10 @@ export default function Landing() {
       <header className="relative z-20 flex items-center justify-between px-6 py-5">
         <div className="flex items-center gap-3">
           <OasisLogo size={36} color="white" />
-          <span className="font-bold text-sm tracking-tight">OASIS-Research</span>
+          <div className="leading-none">
+            <div className="font-black text-sm tracking-[0.08em]">OASIS</div>
+            <div className="font-medium text-[9px] tracking-[0.14em] text-neutral-400 -mt-0.5">Research</div>
+          </div>
         </div>
         <button
           onClick={() => setMenuOpen(!menuOpen)}

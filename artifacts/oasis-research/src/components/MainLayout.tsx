@@ -71,9 +71,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Link href="/home" className="flex items-center gap-2.5 cursor-pointer min-w-0">
           <OasisLogo size={24} color="#111" className="flex-shrink-0" />
           {(!collapsed || isMobile) && (
-            <span className="font-bold text-[13px] tracking-tight text-neutral-900 truncate">
-              OASIS-Research
-            </span>
+            <div className="leading-none min-w-0">
+              <div className="font-black text-[13px] tracking-[0.08em] text-neutral-900">OASIS</div>
+              <div className="font-medium text-[9px] tracking-[0.14em] text-neutral-500 -mt-0.5">Research</div>
+            </div>
           )}
         </Link>
         {isMobile ? (
@@ -227,7 +228,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </button>
           <Link href="/home" className="flex items-center gap-2">
             <OasisLogo size={22} color="#111" />
-            <span className="font-bold text-[13px] tracking-tight text-neutral-900">OASIS-Research</span>
+            <div className="leading-none">
+              <div className="font-black text-[12px] tracking-[0.08em] text-neutral-900">OASIS</div>
+              <div className="font-medium text-[8px] tracking-[0.14em] text-neutral-500 -mt-0.5">Research</div>
+            </div>
           </Link>
         </div>
 
