@@ -77,10 +77,10 @@ export default function Landing() {
       {/* Nav */}
       <header className="relative z-20 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <img src="/oasis-logo.png" alt="OASIS" className="w-9 h-9 object-contain invert" />
+          <img src="/oasis-logo.png" alt="OASIS" className="w-14 h-14 object-contain invert" />
           <div className="leading-none">
-            <div className="font-black text-sm tracking-[0.1em] text-white">OASIS</div>
-            <div className="font-medium text-[9px] tracking-[0.16em] text-neutral-400 -mt-0.5">Research</div>
+            <div className="font-black text-lg tracking-[0.1em] text-white">OASIS</div>
+            <div className="font-medium text-[10px] tracking-[0.16em] text-neutral-400 -mt-0.5">Research</div>
           </div>
         </div>
         <div className="flex items-center gap-3">

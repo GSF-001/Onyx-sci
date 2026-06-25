@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { UserButton } from "@clerk/react";
+import { useClerk } from "@clerk/react";
+import { LogOut } from "lucide-react";
 import {
   Search,
   Sparkles,
@@ -65,16 +66,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
+  const { signOut } = useClerk();
+
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="h-14 flex items-center justify-between px-4 border-b border-neutral-100 flex-shrink-0">
-        <Link href="/home" className="flex items-center gap-2.5 cursor-pointer min-w-0">
-          <OasisLogo size={24} color="#111" className="flex-shrink-0" />
+      <div className="h-20 flex items-center justify-between px-4 border-b border-neutral-100 flex-shrink-0">
+        <Link href="/home" className="flex items-center gap-3 cursor-pointer min-w-0">
+          <OasisLogo size={44} color="#111" className="flex-shrink-0" />
           {(!collapsed || isMobile) && (
             <div className="leading-none min-w-0">
-              <div className="font-black text-[13px] tracking-[0.08em] text-neutral-900">OASIS</div>
-              <div className="font-medium text-[9px] tracking-[0.14em] text-neutral-500 -mt-0.5">Research</div>
+              <div className="font-black text-[17px] tracking-[0.08em] text-neutral-900">OASIS</div>
+              <div className="font-medium text-[10px] tracking-[0.14em] text-neutral-500 -mt-0.5">Research</div>
             </div>
           )}
         </Link>
@@ -178,21 +181,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
       {/* Footer */}
       <div className="p-3 border-t border-neutral-100 flex-shrink-0">
-        <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "justify-center" : ""}`}>
-          <UserButton
-            afterSignOutUrl="/"
-            appearance={{
-              elements: {
-                avatarBox: "w-7 h-7",
-              },
-            }}
-          />
-          {(!collapsed || isMobile) && (
-            <div className="min-w-0">
-              <div className="text-xs font-medium text-neutral-700 truncate">Profil & Keluar</div>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={() => signOut({ redirectUrl: "/" })}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-neutral-500 hover:text-red-600 hover:bg-red-50 transition-colors ${collapsed && !isMobile ? "justify-center px-2" : ""}`}
+          title="Keluar"
+        >
+          <LogOut className="w-4 h-4 flex-shrink-0" />
+          {(!collapsed || isMobile) && <span>Keluar</span>}
+        </button>
       </div>
     </div>
   );
@@ -235,11 +231,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Link href="/home" className="flex items-center gap-2">
-            <OasisLogo size={22} color="#111" />
+          <Link href="/home" className="flex items-center gap-2.5">
+            <OasisLogo size={36} color="#111" />
             <div className="leading-none">
-              <div className="font-black text-[12px] tracking-[0.08em] text-neutral-900">OASIS</div>
-              <div className="font-medium text-[8px] tracking-[0.14em] text-neutral-500 -mt-0.5">Research</div>
+              <div className="font-black text-[15px] tracking-[0.08em] text-neutral-900">OASIS</div>
+              <div className="font-medium text-[9px] tracking-[0.14em] text-neutral-500 -mt-0.5">Research</div>
             </div>
           </Link>
         </div>
