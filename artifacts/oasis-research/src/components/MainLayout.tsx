@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
+import { UserButton } from "@clerk/react";
 import {
   Search,
   Sparkles,
@@ -22,17 +23,17 @@ interface MainLayoutProps {
 }
 
 const NAV_ITEMS = [
-  { href: "/search", label: "Semantic Search", icon: Search },
-  { href: "/copilot", label: "AI Copilot", icon: Sparkles },
-  { href: "/graph", label: "Knowledge Graph", icon: Network },
-  { href: "/gaps", label: "Gap Discovery", icon: Lightbulb },
-  { href: "/trends", label: "Novelty Trends", icon: TrendingUp },
-  { href: "/collaborate", label: "Collaborate", icon: Users },
+  { href: "/search", label: "Pencarian Semantik", icon: Search },
+  { href: "/copilot", label: "Kopilot AI", icon: Sparkles },
+  { href: "/graph", label: "Grafik Pengetahuan", icon: Network },
+  { href: "/gaps", label: "Penemuan Celah", icon: Lightbulb },
+  { href: "/trends", label: "Tren Kebaruan", icon: TrendingUp },
+  { href: "/collaborate", label: "Kolaborasi", icon: Users },
 ];
 
 const LIB_ITEMS = [
-  { href: "/papers", label: "Saved Papers", icon: Library },
-  { href: "/collections", label: "Collections", icon: FolderHeart },
+  { href: "/papers", label: "Makalah Tersimpan", icon: Library },
+  { href: "/collections", label: "Koleksi", icon: FolderHeart },
 ];
 
 export default function MainLayout({ children }: MainLayoutProps) {
@@ -108,7 +109,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             title={collapsed && !isMobile ? "Home" : undefined}
           >
             <Home className="w-4 h-4 flex-shrink-0" />
-            {(!collapsed || isMobile) && <span>Home</span>}
+            {(!collapsed || isMobile) && <span>Beranda</span>}
           </div>
         </Link>
 
@@ -116,7 +117,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <div>
           {(!collapsed || isMobile) && (
             <p className="text-[10px] font-semibold text-neutral-400 tracking-wider uppercase mb-2 px-3">
-              Modules
+              Modul
             </p>
           )}
           {collapsed && !isMobile && <div className="h-px bg-neutral-100 mx-2 mb-3" />}
@@ -147,7 +148,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <div>
           {(!collapsed || isMobile) && (
             <p className="text-[10px] font-semibold text-neutral-400 tracking-wider uppercase mb-2 px-3">
-              Library
+              Perpustakaan
             </p>
           )}
           {collapsed && !isMobile && <div className="h-px bg-neutral-100 mx-2 mb-3" />}
@@ -176,15 +177,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </div>
 
       {/* Footer */}
-      {(!collapsed || isMobile) && (
-        <div className="p-3 border-t border-neutral-100 flex-shrink-0">
-          <Link href="/">
-            <div className="px-3 py-2 rounded-lg text-xs text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 transition-colors cursor-pointer">
-              ← Back to Landing
+      <div className="p-3 border-t border-neutral-100 flex-shrink-0">
+        <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "justify-center" : ""}`}>
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: "w-7 h-7",
+              },
+            }}
+          />
+          {(!collapsed || isMobile) && (
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-neutral-700 truncate">Profil & Keluar</div>
             </div>
-          </Link>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 

@@ -1,13 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Search, Sparkles, Network, Lightbulb, TrendingUp, Users, Menu, X, ArrowRight } from "lucide-react";
-import OasisLogo from "../components/OasisLogo";
+import { ArrowRight, FileText, Quote, BookOpen, Search, Sparkles, Network, Lightbulb, TrendingUp, Users, ExternalLink } from "lucide-react";
+
+const SAMPLE_PAPERS = [
+  { title: "AlphaFold 3: Prediksi Struktur Protein Kompleks", journal: "Nature", year: 2024, citations: 3421, openAccess: true },
+  { title: "Mekanisme Transfer Energi Kuantum pada Fotosintesis", journal: "Science", year: 2024, citations: 891, openAccess: true },
+  { title: "Terapi Gen CRISPR-Cas9 untuk Kanker Pankreas", journal: "Cell", year: 2023, citations: 1204, openAccess: false },
+  { title: "LLM untuk Penemuan Obat Baru: Studi Sistematis", journal: "PNAS", year: 2024, citations: 567, openAccess: true },
+  { title: "Komputasi Kuantum: Koreksi Error pada Skala Besar", journal: "Physical Review", year: 2024, citations: 342, openAccess: true },
+  { title: "Seqüência de RNA de Célula Única em Tecidos Neurais", journal: "Nature Methods", year: 2023, citations: 2109, openAccess: false },
+];
+
+const FEATURES = [
+  { icon: Search, label: "Pencarian Semantik", desc: "Temukan jutaan makalah dengan bahasa alami", color: "text-blue-400" },
+  { icon: Sparkles, label: "Kopilot AI", desc: "Tanya jawab berdasarkan literatur ilmiah nyata", color: "text-purple-400" },
+  { icon: Network, label: "Grafik Pengetahuan", desc: "Visualisasi hubungan antar konsep & peneliti", color: "text-green-400" },
+  { icon: Lightbulb, label: "Penemuan Celah", desc: "Identifikasi area penelitian yang belum dieksplorasi", color: "text-yellow-400" },
+  { icon: TrendingUp, label: "Tren Kebaruan", desc: "Lacak topik ilmiah yang sedang naik daun", color: "text-orange-400" },
+  { icon: Users, label: "Kolaborasi", desc: "Terhubung dengan peneliti satu bidang", color: "text-pink-400" },
+];
 
 export default function Landing() {
   const [, setLocation] = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -15,200 +30,208 @@ export default function Landing() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let width = window.innerWidth;
-    let height = window.innerHeight;
+    let animId: number;
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
 
-    canvas.width = width;
-    canvas.height = height;
-
-    const stars: { x: number; y: number; z: number }[] = [];
-    for (let i = 0; i < 350; i++) {
-      stars.push({
-        x: Math.random() * width - width / 2,
-        y: Math.random() * height - height / 2,
-        z: Math.random() * width,
-      });
-    }
+    const dots: { x: number; y: number; z: number }[] = Array.from({ length: 300 }, () => ({
+      x: Math.random() * W - W / 2,
+      y: Math.random() * H - H / 2,
+      z: Math.random() * W,
+    }));
 
     const draw = () => {
-      ctx.fillStyle = "rgba(0,0,0,0.82)";
-      ctx.fillRect(0, 0, width, height);
-      const cx = width / 2;
-      const cy = height / 2;
-      for (const star of stars) {
-        star.z -= 0.45;
-        if (star.z <= 0) {
-          star.x = Math.random() * width - cx;
-          star.y = Math.random() * height - cy;
-          star.z = width;
-        }
-        const x = cx + (star.x / star.z) * width;
-        const y = cy + (star.y / star.z) * width;
-        const s = Math.max(0.2, (1 - star.z / width) * 2.5);
-        ctx.fillStyle = `rgba(255,255,255,${0.4 + (1 - star.z / width) * 0.6})`;
+      ctx.fillStyle = "rgba(4,4,10,0.85)";
+      ctx.fillRect(0, 0, W, H);
+      for (const d of dots) {
+        d.z -= 0.5;
+        if (d.z <= 0) { d.x = Math.random() * W - W / 2; d.y = Math.random() * H - H / 2; d.z = W; }
+        const x = W / 2 + (d.x / d.z) * W;
+        const y = H / 2 + (d.y / d.z) * H;
+        const s = Math.max(0.2, (1 - d.z / W) * 2.2);
+        const a = 0.3 + (1 - d.z / W) * 0.7;
+        ctx.fillStyle = `rgba(180,200,255,${a})`;
         ctx.beginPath();
         ctx.arc(x, y, s, 0, Math.PI * 2);
         ctx.fill();
       }
-      animationFrameId = requestAnimationFrame(draw);
+      animId = requestAnimationFrame(draw);
     };
-
     draw();
 
-    const handleResize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+    const onResize = () => {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W; canvas.height = H;
     };
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameId);
-    };
+    window.addEventListener("resize", onResize);
+    return () => { window.removeEventListener("resize", onResize); cancelAnimationFrame(animId); };
   }, []);
 
-  const modules = [
-    { icon: Search, label: "Semantic\nSearch", href: "/search" },
-    { icon: Sparkles, label: "AI\nCopilot", href: "/copilot" },
-    { icon: Network, label: "Knowledge\nGraph", href: "/graph" },
-    { icon: Lightbulb, label: "Gap\nDiscovery", href: "/gaps" },
-    { icon: TrendingUp, label: "Novelty\nTrends", href: "/trends" },
-    { icon: Users, label: "Collaborate", href: "/collaborate" },
-  ];
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLocation("/home");
-  };
-
   return (
-    <div className="min-h-screen w-full bg-black text-white overflow-x-hidden relative flex flex-col font-sans select-none">
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70 z-0 pointer-events-none" />
+    <div className="min-h-screen bg-[#04040a] text-white font-sans overflow-x-hidden relative">
+      <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-[#04040a]/30 to-[#04040a]/80 z-0 pointer-events-none" />
 
       {/* Nav */}
-      <header className="relative z-20 flex items-center justify-between px-6 py-5">
+      <header className="relative z-20 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <OasisLogo size={36} color="white" />
+          <img src="/oasis-logo.png" alt="OASIS" className="w-9 h-9 object-contain invert" />
           <div className="leading-none">
-            <div className="font-black text-sm tracking-[0.08em]">OASIS</div>
-            <div className="font-medium text-[9px] tracking-[0.14em] text-neutral-400 -mt-0.5">Research</div>
+            <div className="font-black text-sm tracking-[0.1em] text-white">OASIS</div>
+            <div className="font-medium text-[9px] tracking-[0.16em] text-neutral-400 -mt-0.5">Research</div>
           </div>
         </div>
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="p-2 text-white hover:text-neutral-300 transition-colors"
-        >
-          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-        {menuOpen && (
-          <div className="absolute top-16 right-4 w-56 bg-neutral-900/95 backdrop-blur border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl z-50">
-            {modules.map((m) => (
-              <button
-                key={m.href}
-                onClick={() => { setLocation(m.href); setMenuOpen(false); }}
-                className="w-full text-left px-5 py-3 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
-              >
-                {m.label.replace("\n", " ")}
-              </button>
-            ))}
-            <div className="border-t border-neutral-800 mt-1" />
-            <button
-              onClick={() => { setLocation("/home"); setMenuOpen(false); }}
-              className="w-full text-left px-5 py-3 text-sm text-blue-400 hover:bg-neutral-800 transition-colors font-medium"
-            >
-              Launch App →
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setLocation("/sign-in")}
+            className="text-sm text-neutral-400 hover:text-white transition-colors px-4 py-2"
+          >
+            Masuk
+          </button>
+          <button
+            onClick={() => setLocation("/sign-up")}
+            className="text-sm bg-white text-black font-semibold px-5 py-2 rounded-xl hover:bg-neutral-100 transition-colors"
+          >
+            Mulai Gratis
+          </button>
+        </div>
       </header>
 
       {/* Hero */}
-      <main className="relative z-10 flex-1 flex flex-col px-6 pt-12 pb-8">
-        <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur border border-white/10 rounded-full px-4 py-1.5 mb-8 self-start">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-          <span className="text-xs font-medium tracking-wider text-neutral-300">AI-Powered Research Intelligence</span>
+      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-12">
+        <div className="text-center mb-4">
+          <span className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-neutral-400 font-medium tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            Platform Intelijen Riset Berbasis AI
+          </span>
         </div>
 
-        <h1 className="text-[clamp(2.4rem,8vw,5.5rem)] font-serif font-medium leading-[1.05] mb-4 max-w-5xl">
-          Navigate the<br />
-          World of Research.<br />
-          <span className="text-neutral-500">Discover What Matters.</span>
+        <h1 className="text-center text-[clamp(2.2rem,7vw,5rem)] font-serif font-semibold leading-[1.08] mb-5 max-w-4xl mx-auto">
+          Jelajahi Apa yang<br />
+          Sedang Diteliti Dunia
+          <br />
+          <span className="text-neutral-500 italic">Saat Ini.</span>
         </h1>
 
-        <p className="text-neutral-400 text-base md:text-lg mb-3 max-w-lg leading-relaxed">
-          OASIS Research helps researchers discover, analyze, and synthesize scientific knowledge across 100M+ papers.
+        <p className="text-center text-neutral-400 text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+          Akses 280 juta+ makalah ilmiah, temukan celah penelitian,
+          dan analisis tren sains dengan bantuan kecerdasan buatan.
         </p>
 
-        {/* Search bar */}
-        <form onSubmit={handleSearch} className="mt-6 w-full max-w-xl flex items-center bg-white/8 backdrop-blur border border-white/20 rounded-2xl overflow-hidden shadow-2xl">
-          <Search className="ml-5 w-5 h-5 text-neutral-400 flex-shrink-0" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            type="text"
-            placeholder="Search 100M+ papers, concepts, methods, datasets..."
-            className="flex-1 bg-transparent px-4 py-4 text-white placeholder:text-neutral-500 text-sm outline-none"
-          />
+        {/* CTA */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
           <button
-            type="submit"
-            className="m-1.5 bg-white text-black font-semibold text-sm px-5 py-3 rounded-xl hover:bg-neutral-100 transition-colors flex items-center gap-2 flex-shrink-0"
+            onClick={() => setLocation("/sign-up")}
+            className="flex items-center gap-2 bg-white text-black font-semibold px-8 py-4 rounded-2xl hover:bg-neutral-100 transition-colors text-sm shadow-lg"
           >
-            Start Research <ArrowRight className="w-4 h-4" />
+            <img src="/oasis-logo.png" alt="" className="w-5 h-5 object-contain" />
+            Mulai Riset Sekarang
+            <ArrowRight className="w-4 h-4" />
           </button>
-        </form>
+          <button
+            onClick={() => setLocation("/sign-in")}
+            className="flex items-center gap-2 bg-white/5 border border-white/15 text-white font-medium px-8 py-4 rounded-2xl hover:bg-white/10 transition-colors text-sm"
+          >
+            Sudah punya akun? Masuk
+          </button>
+        </div>
 
-        {/* Module icons */}
-        <div className="mt-16 grid grid-cols-3 md:grid-cols-6 gap-3 max-w-2xl">
-          {modules.map((mod) => {
-            const Icon = mod.icon;
-            return (
-              <button
-                key={mod.href}
-                onClick={() => setLocation(mod.href)}
-                className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/25 transition-all group"
+        {/* Floating paper cards */}
+        <div className="relative mb-20">
+          <div className="text-xs text-neutral-600 uppercase tracking-widest text-center mb-5 font-medium">
+            Makalah Terbaru dari 280M+ Sumber
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-5xl mx-auto">
+            {SAMPLE_PAPERS.map((p, i) => (
+              <div
+                key={i}
+                className="bg-white/4 backdrop-blur border border-white/8 rounded-2xl p-4 hover:bg-white/7 hover:border-white/15 transition-all group cursor-default"
               >
-                <Icon className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
-                <span className="text-[11px] text-neutral-400 group-hover:text-white font-medium text-center leading-tight whitespace-pre-line transition-colors">
-                  {mod.label}
-                </span>
-              </button>
-            );
-          })}
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-4 h-4 text-neutral-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-200 leading-snug mb-1.5 line-clamp-2">
+                      {p.title}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-2 text-xs text-neutral-500">
+                      <span className="italic">{p.journal}</span>
+                      <span>·</span>
+                      <span>{p.year}</span>
+                      <span>·</span>
+                      <span className="flex items-center gap-0.5"><Quote className="w-2.5 h-2.5" />{p.citations.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  {p.openAccess && (
+                    <span className="text-[10px] px-2 py-0.5 bg-green-500/15 border border-green-500/30 text-green-400 rounded-full font-medium">
+                      Akses Terbuka
+                    </span>
+                  )}
+                  <div className="ml-auto flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <BookOpen className="w-3.5 h-3.5 text-neutral-400" />
+                    <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Features grid */}
+        <div className="max-w-4xl mx-auto mb-20">
+          <h2 className="text-center text-xl md:text-2xl font-semibold mb-2">Satu Platform, Semua yang Anda Butuhkan</h2>
+          <p className="text-center text-neutral-500 text-sm mb-8">Dari pencarian hingga kolaborasi — semua didukung AI</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {FEATURES.map((f) => {
+              const Icon = f.icon;
+              return (
+                <div key={f.label} className="bg-white/3 border border-white/8 rounded-2xl p-5 hover:bg-white/6 transition-all">
+                  <Icon className={`w-6 h-6 mb-3 ${f.color}`} />
+                  <div className="font-semibold text-sm text-white mb-1">{f.label}</div>
+                  <div className="text-xs text-neutral-500 leading-relaxed">{f.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="max-w-2xl mx-auto mb-20">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            {[
+              { val: "280M+", label: "Makalah Ilmiah" },
+              { val: "100+", label: "Bidang Ilmu" },
+              { val: "AI", label: "Powered Penuh" },
+            ].map((s) => (
+              <div key={s.label} className="bg-white/3 border border-white/8 rounded-2xl py-6">
+                <div className="text-2xl font-black text-white mb-1">{s.val}</div>
+                <div className="text-xs text-neutral-500">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Final CTA */}
+        <div className="text-center pb-12">
+          <div className="inline-block bg-white/3 border border-white/10 rounded-3xl px-10 py-10">
+            <h2 className="text-xl md:text-2xl font-semibold mb-2">Siap Memulai Riset Anda?</h2>
+            <p className="text-neutral-400 text-sm mb-6">Gratis selamanya. Tidak perlu kartu kredit.</p>
+            <button
+              onClick={() => setLocation("/sign-up")}
+              className="flex items-center gap-2 bg-white text-black font-semibold px-8 py-3.5 rounded-2xl hover:bg-neutral-100 transition-colors text-sm mx-auto"
+            >
+              Daftar dengan Google
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-neutral-700 text-xs mt-8">© 2025 OASIS Research · oasisresearch.ai</p>
         </div>
       </main>
-
-      {/* Trusted by */}
-      <section className="relative z-10 border-t border-white/5 py-10 px-6 bg-black/40">
-        <p className="text-center text-xs text-neutral-600 uppercase tracking-widest mb-6 font-medium">
-          Trusted by leading institutions
-        </p>
-        <div className="flex flex-wrap justify-center gap-8 md:gap-14 items-center opacity-40">
-          {["MIT", "Stanford", "Harvard", "Google DeepMind", "NASA"].map((name) => (
-            <span key={name} className="text-white font-bold text-sm md:text-base tracking-wide">{name}</span>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative z-10 bg-black py-16 px-6 text-center">
-        <h2 className="text-2xl md:text-4xl font-serif font-medium mb-4">
-          Find the Next Breakthrough<br />Before Everyone Else
-        </h2>
-        <p className="text-neutral-400 mb-8 text-sm md:text-base max-w-md mx-auto">
-          Join thousands of researchers already accelerating their discoveries with OASIS.
-        </p>
-        <button
-          onClick={() => setLocation("/home")}
-          className="inline-flex items-center gap-2 bg-white text-black font-semibold px-8 py-4 rounded-2xl hover:bg-neutral-100 transition-colors text-sm"
-        >
-          Get Started for Free <ArrowRight className="w-4 h-4" />
-        </button>
-        <p className="text-neutral-600 text-xs mt-4">No credit card required</p>
-        <p className="text-neutral-700 text-xs mt-6">oasisresearch.ai</p>
-      </section>
     </div>
   );
 }

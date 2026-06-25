@@ -21,8 +21,8 @@ export default function SearchPage() {
     <MainLayout>
       <div className="max-w-5xl mx-auto p-8">
         <div className="mb-12">
-          <h1 className="text-3xl font-serif font-bold mb-4">Semantic Search</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mb-8">Discover papers using natural language queries.</p>
+          <h1 className="text-3xl font-serif font-bold mb-4">Pencarian Semantik</h1>
+          <p className="text-neutral-500 dark:text-neutral-400 mb-8">Temukan makalah ilmiah dengan kueri bahasa alami dari 280M+ sumber.</p>
           
           <form onSubmit={handleSearch} className="flex space-x-3">
             <div className="relative flex-1">
@@ -31,11 +31,11 @@ export default function SearchPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full pl-12 py-6 text-lg rounded-xl border-neutral-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm"
-                placeholder="Find papers on attention mechanisms in transformers..."
+                placeholder="Cari makalah tentang mekanisme atensi dalam transformer..."
               />
             </div>
             <Button type="submit" size="lg" className="rounded-xl px-8 h-auto" disabled={searchMutation.isPending}>
-              {searchMutation.isPending ? "Searching..." : "Search"}
+              {searchMutation.isPending ? "Mencari..." : "Cari"}
             </Button>
           </form>
 
@@ -73,7 +73,7 @@ export default function SearchPage() {
 
           {searchMutation.data && (
             <div className="mb-6 flex justify-between items-center text-sm text-neutral-500">
-              <span>Found {searchMutation.data.total} results for "{searchMutation.data.query}"</span>
+              <span>Ditemukan {searchMutation.data.total.toLocaleString()} hasil untuk "{searchMutation.data.query}"</span>
             </div>
           )}
 
@@ -90,19 +90,29 @@ export default function SearchPage() {
                 )}
               </div>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-                {paper.authors.join(", ")} • {paper.year} {paper.journal ? `• ${paper.journal}` : ''} 
-                <span className="ml-2 text-neutral-400 dark:text-neutral-500">({paper.citationCount || 0} citations)</span>
+                {paper.authors.slice(0,3).join(", ")}{paper.authors.length > 3 ? " et al." : ""} · {paper.year} {paper.journal ? `· ${paper.journal}` : ''} 
+                <span className="ml-2 text-neutral-400 dark:text-neutral-500">({(paper.citationCount || 0).toLocaleString()} sitasi)</span>
+                {paper.isOpenAccess && <span className="ml-2 text-green-600 font-medium">· Akses Terbuka</span>}
               </p>
               <p className="text-neutral-700 dark:text-neutral-300 text-sm leading-relaxed mb-6 line-clamp-3">
                 {paper.abstract}
               </p>
               <div className="flex items-center space-x-3">
                 <Button variant="outline" size="sm" className="rounded-lg">
-                  <BookmarkPlus className="w-4 h-4 mr-2" /> Save Paper
+                  <BookmarkPlus className="w-4 h-4 mr-2" /> Simpan
                 </Button>
+                {paper.pdfUrl && (
+                  <Button variant="outline" size="sm" className="rounded-lg text-blue-600 border-blue-200 hover:bg-blue-50" asChild>
+                    <a href={paper.pdfUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-4 h-4 mr-2" /> Buka PDF
+                    </a>
+                  </Button>
+                )}
                 {paper.url && (
-                  <Button variant="ghost" size="sm" className="rounded-lg text-neutral-500">
-                    <ExternalLink className="w-4 h-4 mr-2" /> View Source
+                  <Button variant="ghost" size="sm" className="rounded-lg text-neutral-500" asChild>
+                    <a href={paper.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-4 h-4 mr-2" /> Lihat Sumber
+                    </a>
                   </Button>
                 )}
               </div>
