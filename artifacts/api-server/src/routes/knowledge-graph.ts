@@ -1,7 +1,21 @@
+// graph.ts
 import { Router } from "express";
 import { chatCompletion } from "../lib/groq";
 
 const router = Router();
+
+const staticConcepts = [
+  { id: "c1", name: "Deep Learning", type: "concept", paperCount: 45230, description: "Neural network architectures with multiple layers" },
+  { id: "c2", name: "Transformer Architecture", type: "method", paperCount: 12450, description: "Attention-based sequence-to-sequence models" },
+  { id: "c3", name: "CRISPR-Cas9", type: "method", paperCount: 8920, description: "Gene editing technology" },
+  { id: "c4", name: "ImageNet", type: "dataset", paperCount: 5670, description: "Large-scale image recognition dataset" },
+  { id: "c5", name: "Protein Folding", type: "concept", paperCount: 6780, description: "Structure prediction of proteins" },
+  { id: "c6", name: "Reinforcement Learning", type: "method", paperCount: 9870, description: "Learning through reward-based feedback" },
+  { id: "c7", name: "GraphQL", type: "method", paperCount: 1230, description: "Query language for APIs" },
+  { id: "c8", name: "mRNA Vaccine", type: "concept", paperCount: 3450, description: "Messenger RNA-based immunization" },
+  { id: "c9", name: "Federated Learning", type: "method", paperCount: 4560, description: "Distributed machine learning" },
+  { id: "c10", name: "AlphaFold", type: "dataset", paperCount: 2340, description: "Protein structure predictions database" },
+];
 
 function assignPositions(nodes: object[]): object[] {
   const radius = 300;
@@ -78,19 +92,6 @@ Use realistic scientific terms. Return ONLY valid JSON.`;
 router.get("/concepts", async (req, res) => {
   const q = req.query.q as string;
 
-  const staticConcepts = [
-    { id: "c1", name: "Deep Learning", type: "concept", paperCount: 45230, description: "Neural network architectures with multiple layers" },
-    { id: "c2", name: "Transformer Architecture", type: "method", paperCount: 12450, description: "Attention-based sequence-to-sequence models" },
-    { id: "c3", name: "CRISPR-Cas9", type: "method", paperCount: 8920, description: "Gene editing technology" },
-    { id: "c4", name: "ImageNet", type: "dataset", paperCount: 5670, description: "Large-scale image recognition dataset" },
-    { id: "c5", name: "Protein Folding", type: "concept", paperCount: 6780, description: "Structure prediction of proteins" },
-    { id: "c6", name: "Reinforcement Learning", type: "method", paperCount: 9870, description: "Learning through reward-based feedback" },
-    { id: "c7", name: "GraphQL", type: "method", paperCount: 1230, description: "Query language for APIs" },
-    { id: "c8", name: "mRNA Vaccine", type: "concept", paperCount: 3450, description: "Messenger RNA-based immunization" },
-    { id: "c9", name: "Federated Learning", type: "method", paperCount: 4560, description: "Distributed machine learning" },
-    { id: "c10", name: "AlphaFold", type: "dataset", paperCount: 2340, description: "Protein structure predictions database" },
-  ];
-
   const filtered = q
     ? staticConcepts.filter(c =>
         c.name.toLowerCase().includes(q.toLowerCase()) ||
@@ -106,7 +107,12 @@ router.get("/concept/:id/related", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const prompt = `Generate a small knowledge graph showing concepts related to concept ID "${id}".
+    // Resolve the raw id to its actual concept name before it hits the prompt —
+    // the LLM has no idea what "c1" means, but it knows what "Deep Learning" means.
+    const concept = staticConcepts.find(c => c.id === id);
+    const conceptName = concept?.name ?? id;
+
+    const prompt = `Generate a small knowledge graph showing concepts related to "${conceptName}".
 
 Return JSON in this exact format:
 {
@@ -117,7 +123,7 @@ Return JSON in this exact format:
   "edges": [
     {"source": "n1", "target": "n2", "relationship": "uses", "strength": 0.8}
   ],
-  "centralConcept": "Related Concepts",
+  "centralConcept": "${conceptName}",
   "insights": "These concepts connect through shared methodologies."
 }
 
