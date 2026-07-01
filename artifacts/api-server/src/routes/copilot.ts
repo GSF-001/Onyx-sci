@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { copilotSessionsTable, copilotMessagesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { chatCompletion } from "../lib/groq";
 import { generateId } from "../lib/id";
 
@@ -15,6 +15,15 @@ type Citation = {
   journal?: string;
   url?: string;
 };
+
+// NOTE: ideally shared with the other route files via ../lib/errors
+class HttpError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
 
 // ---------- Helpers ----------
 
@@ -34,6 +43,12 @@ function serializeMessage(m: typeof copilotMessagesTable.$inferSelect) {
   };
 }
 
+function parsePagination(query: Record<string, unknown>, defaultSize = 20) {
+  const page = Math.max(1, parseInt(String(query.page ?? "1"), 10) || 1);
+  const pageSize = Math.min(100, Math.max(1, parseInt(String(query.pageSize ?? String(defaultSize)), 10) || defaultSize));
+  return { page, pageSize, offset: (page - 1) * pageSize };
+}
+
 function asyncHandler(
   fn: (req: import("express").Request, res: import("express").Response) => Promise<void>
 ) {
@@ -41,6 +56,9 @@ function asyncHandler(
     try {
       await fn(req, res);
     } catch (err) {
+      if (err instanceof HttpError) {
+        return res.status(err.status).json({ error: err.message });
+      }
       req.log.error({ err }, `${req.method} ${req.originalUrl} failed`);
       res.status(500).json({ error: "Internal server error" });
     }
@@ -84,17 +102,39 @@ async function appendExchange(
     .where(eq(copilotSessionsTable.id, sessionId));
 }
 
-// Retry a flaky LLM call once before giving up, so a single transient
-// network/rate-limit hiccup doesn't fail the whole request
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Only retry errors that are actually transient. A 400 (bad request) or an
+// auth failure will fail identically on every retry and just wastes time /
+// burns the request budget — only network-level errors, 429 (rate limit),
+// and 5xx are worth retrying.
+function isRetryable(err: unknown): boolean {
+  const status = (err as { status?: number; response?: { status?: number } })?.status
+    ?? (err as { response?: { status?: number } })?.response?.status;
+  if (status === undefined) return true; // no status usually means network/timeout error
+  return status === 429 || status >= 500;
+}
+
+// Retry with exponential backoff (300ms, 600ms, 1200ms) instead of hammering
+// the API immediately, which is especially important on 429s.
 async function chatCompletionWithRetry(
   messages: Parameters<typeof chatCompletion>[0],
-  options: Parameters<typeof chatCompletion>[1]
+  options: Parameters<typeof chatCompletion>[1],
+  maxAttempts = 3
 ): Promise<string> {
-  try {
-    return await chatCompletion(messages, options);
-  } catch (err) {
-    return await chatCompletion(messages, options);
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await chatCompletion(messages, options);
+    } catch (err) {
+      lastErr = err;
+      if (attempt === maxAttempts || !isRetryable(err)) throw err;
+      await sleep(300 * 2 ** (attempt - 1));
+    }
   }
+  throw lastErr;
 }
 
 // ---------- Ask ----------
@@ -108,12 +148,10 @@ router.post(
       context?: string;
     };
 
-    if (!question || !question.trim()) {
-      return res.status(400).json({ error: "question is required" });
-    }
-    if (sessionId) {
-      const exists = await sessionExists(sessionId);
-      if (!exists) return res.status(404).json({ error: "Session not found" });
+    if (!question || !question.trim()) throw new HttpError(400, "question is required");
+    if (question.length > 4000) throw new HttpError(400, "question is too long (max 4000 chars)");
+    if (sessionId && !(await sessionExists(sessionId))) {
+      throw new HttpError(404, "Session not found");
     }
 
     const systemPrompt = `You are OASIS Research AI Copilot — an expert scientific research assistant with access to 100M+ academic papers. You provide accurate, well-cited answers to research questions.
@@ -141,7 +179,7 @@ FOLLOW_UPS:
 
     const messages: Array<{ role: "user" | "assistant" | "system"; content: string }> = [
       { role: "system", content: systemPrompt },
-      ...(context ? [{ role: "user" as const, content: `Context: ${context}` }] : []),
+      ...(context ? [{ role: "user" as const, content: `Context: ${context.slice(0, 2000)}` }] : []),
       { role: "user", content: question },
     ];
 
@@ -207,9 +245,7 @@ router.post(
       mode?: string;
     };
 
-    if (!text || !text.trim()) {
-      return res.status(400).json({ error: "text is required" });
-    }
+    if (!text || !text.trim()) throw new HttpError(400, "text is required");
 
     const modeInstructions: Record<string, string> = {
       brief: "Provide a brief 2-3 sentence summary",
@@ -238,30 +274,39 @@ Return ONLY valid JSON.`;
       temperature: 0.3,
     });
     const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return res.status(502).json({ error: "AI response could not be parsed" });
-    }
+    if (!jsonMatch) throw new HttpError(502, "AI response could not be parsed");
 
     try {
       const parsed = JSON.parse(jsonMatch[0]);
       res.json({ ...parsed, paperId: paperId ?? null, mode: resolvedMode });
     } catch (_) {
-      res.status(502).json({ error: "AI response could not be parsed" });
+      throw new HttpError(502, "AI response could not be parsed");
     }
   })
 );
 
 // ---------- Sessions ----------
 
-// Get sessions (most recently updated first)
+// Get sessions, most recently updated first, paginated
 router.get(
   "/sessions",
-  asyncHandler(async (_req, res) => {
-    const sessions = await db
-      .select()
-      .from(copilotSessionsTable)
-      .orderBy(copilotSessionsTable.updatedAt);
-    res.json(sessions.reverse().map(serializeSession));
+  asyncHandler(async (req, res) => {
+    const { page, pageSize, offset } = parsePagination(req.query as Record<string, unknown>);
+
+    const [rows, total] = await Promise.all([
+      db
+        .select()
+        .from(copilotSessionsTable)
+        .orderBy(desc(copilotSessionsTable.updatedAt))
+        .limit(pageSize)
+        .offset(offset),
+      db.$count(copilotSessionsTable),
+    ]);
+
+    res.json({
+      data: rows.map(serializeSession),
+      pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
+    });
   })
 );
 
@@ -284,9 +329,7 @@ router.patch(
   "/sessions/:id",
   asyncHandler(async (req, res) => {
     const { title } = req.body as { title?: string };
-    if (!title || !title.trim()) {
-      return res.status(400).json({ error: "title is required" });
-    }
+    if (!title || !title.trim()) throw new HttpError(400, "title is required");
 
     const [session] = await db
       .update(copilotSessionsTable)
@@ -294,7 +337,7 @@ router.patch(
       .where(eq(copilotSessionsTable.id, req.params.id))
       .returning();
 
-    if (!session) return res.status(404).json({ error: "Session not found" });
+    if (!session) throw new HttpError(404, "Session not found");
     res.json(serializeSession(session));
   })
 );
@@ -309,25 +352,35 @@ router.delete(
       .where(eq(copilotSessionsTable.id, req.params.id))
       .returning({ id: copilotSessionsTable.id });
 
-    if (deleted.length === 0) return res.status(404).json({ error: "Session not found" });
+    if (deleted.length === 0) throw new HttpError(404, "Session not found");
     res.status(204).send();
   })
 );
 
-// Get messages for a session
+// Get messages for a session, paginated (oldest first, larger default page
+// since chat transcripts are usually read in full)
 router.get(
   "/sessions/:id/messages",
   asyncHandler(async (req, res) => {
-    const exists = await sessionExists(req.params.id);
-    if (!exists) return res.status(404).json({ error: "Session not found" });
+    if (!(await sessionExists(req.params.id))) throw new HttpError(404, "Session not found");
 
-    const messages = await db
-      .select()
-      .from(copilotMessagesTable)
-      .where(eq(copilotMessagesTable.sessionId, req.params.id))
-      .orderBy(copilotMessagesTable.createdAt);
+    const { page, pageSize, offset } = parsePagination(req.query as Record<string, unknown>, 50);
 
-    res.json(messages.map(serializeMessage));
+    const [rows, total] = await Promise.all([
+      db
+        .select()
+        .from(copilotMessagesTable)
+        .where(eq(copilotMessagesTable.sessionId, req.params.id))
+        .orderBy(copilotMessagesTable.createdAt)
+        .limit(pageSize)
+        .offset(offset),
+      db.$count(copilotMessagesTable, eq(copilotMessagesTable.sessionId, req.params.id)),
+    ]);
+
+    res.json({
+      data: rows.map(serializeMessage),
+      pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
+    });
   })
 );
 
