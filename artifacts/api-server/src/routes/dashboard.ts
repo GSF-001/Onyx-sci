@@ -14,8 +14,21 @@ const PLACEHOLDER_TOTAL_SEARCHES = 48_291;
 const PLACEHOLDER_COLLABORATORS = 12;
 const PLACEHOLDER_GAPS_OFFSET = 847;
 
+// Simple in-memory TTL cache so a dashboard that gets polled/refreshed a lot
+// doesn't re-run 4 count queries on every single request.
+// CAVEAT: this is per-process memory — fine for a single instance, but if
+// this service runs multiple replicas behind a load balancer, each replica
+// has its own stale cache. For real multi-instance production, replace this
+// with a shared cache (Redis) or accept eventual staleness across replicas.
+let cache: { data: unknown; expiresAt: number } | null = null;
+const CACHE_TTL_MS = 30_000;
+
 router.get("/stats", async (req, res) => {
   try {
+    if (cache && cache.expiresAt > Date.now()) {
+      return res.json(cache.data);
+    }
+
     // Count at the DB level instead of pulling every row into memory —
     // the previous version did db.select().from(papersTable) just to
     // read .length, which is a serious perf/memory problem at scale.
@@ -26,7 +39,7 @@ router.get("/stats", async (req, res) => {
       db.$count(researchGapsTable),
     ]);
 
-    res.json({
+    const stats = {
       totalPapers: PLACEHOLDER_TOTAL_PAPERS,
       totalSearches: PLACEHOLDER_TOTAL_SEARCHES,
       gapsDiscovered: gapCount + PLACEHOLDER_GAPS_OFFSET,
@@ -34,7 +47,10 @@ router.get("/stats", async (req, res) => {
       savedPapers: paperCount,
       collections: collectionCount,
       totalProjects: projectCount,
-    });
+    };
+
+    cache = { data: stats, expiresAt: Date.now() + CACHE_TTL_MS };
+    res.json(stats);
   } catch (err) {
     req.log.error({ err }, "Get dashboard stats failed");
     res.status(500).json({ error: "Failed to get dashboard stats" });
