@@ -1,10 +1,19 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { collectionsTable, papersTable } from "@workspace/db";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, ilike } from "drizzle-orm";
 import { generateId } from "../lib/id";
 
 const router = Router();
+
+// NOTE: ideally shared with the other route files via ../lib/errors
+class HttpError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
 
 // ---------- Helpers ----------
 
@@ -21,6 +30,12 @@ function serializeCollection(
   };
 }
 
+function parsePagination(query: Record<string, unknown>) {
+  const page = Math.max(1, parseInt(String(query.page ?? "1"), 10) || 1);
+  const pageSize = Math.min(100, Math.max(1, parseInt(String(query.pageSize ?? "20"), 10) || 20));
+  return { page, pageSize, offset: (page - 1) * pageSize };
+}
+
 function asyncHandler(
   fn: (req: import("express").Request, res: import("express").Response) => Promise<void>
 ) {
@@ -28,6 +43,9 @@ function asyncHandler(
     try {
       await fn(req, res);
     } catch (err) {
+      if (err instanceof HttpError) {
+        return res.status(err.status).json({ error: err.message });
+      }
       req.log.error({ err }, `${req.method} ${req.originalUrl} failed`);
       res.status(500).json({ error: "Internal server error" });
     }
@@ -36,25 +54,31 @@ function asyncHandler(
 
 // ---------- Collections ----------
 
-// Get collections (supports optional ?search= on name)
+// Get collections — ?search= now filters in SQL (ilike) instead of fetching
+// every row and filtering in JS, and results are paginated.
 router.get(
   "/",
   asyncHandler(async (req, res) => {
     const { search } = req.query as { search?: string };
+    const { page, pageSize, offset } = parsePagination(req.query as Record<string, unknown>);
 
-    let collections = await db
-      .select()
-      .from(collectionsTable)
-      .orderBy(collectionsTable.createdAt);
+    const whereClause = search ? ilike(collectionsTable.name, `%${search}%`) : undefined;
 
-    if (search) {
-      const q = search.toLowerCase();
-      collections = collections.filter((c) => c.name.toLowerCase().includes(q));
-    }
+    const [rows, total] = await Promise.all([
+      db
+        .select()
+        .from(collectionsTable)
+        .where(whereClause)
+        .orderBy(collectionsTable.createdAt)
+        .limit(pageSize)
+        .offset(offset),
+      db.$count(collectionsTable, whereClause),
+    ]);
 
-    // Papers aren't hydrated on the list view (kept lightweight on purpose);
-    // fetch a single collection by ID to get its papers populated.
-    res.json(collections.map((c) => serializeCollection(c)));
+    res.json({
+      data: rows.map((c) => serializeCollection(c)),
+      pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
+    });
   })
 );
 
@@ -69,11 +93,9 @@ router.post(
       tags?: string[];
     };
 
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: "Collection name is required" });
-    }
+    if (!name || !name.trim()) throw new HttpError(400, "Collection name is required");
     if (tags !== undefined && !Array.isArray(tags)) {
-      return res.status(400).json({ error: "Tags must be an array of strings" });
+      throw new HttpError(400, "Tags must be an array of strings");
     }
 
     const id = generateId();
@@ -103,7 +125,7 @@ router.get(
       .from(collectionsTable)
       .where(eq(collectionsTable.id, req.params.id))
       .limit(1);
-    if (!collection) return res.status(404).json({ error: "Collection not found" });
+    if (!collection) throw new HttpError(404, "Collection not found");
 
     const paperIds = (collection.paperIds as string[]) ?? [];
     let papers: object[] = [];
@@ -126,11 +148,9 @@ router.patch(
       tags?: string[];
     };
 
-    if (name !== undefined && !name.trim()) {
-      return res.status(400).json({ error: "Collection name cannot be empty" });
-    }
+    if (name !== undefined && !name.trim()) throw new HttpError(400, "Collection name cannot be empty");
     if (tags !== undefined && !Array.isArray(tags)) {
-      return res.status(400).json({ error: "Tags must be an array of strings" });
+      throw new HttpError(400, "Tags must be an array of strings");
     }
 
     const updates: Record<string, unknown> = {};
@@ -145,7 +165,7 @@ router.patch(
       .where(eq(collectionsTable.id, req.params.id))
       .returning();
 
-    if (!collection) return res.status(404).json({ error: "Collection not found" });
+    if (!collection) throw new HttpError(404, "Collection not found");
     res.json(serializeCollection(collection));
   })
 );
@@ -159,78 +179,81 @@ router.delete(
       .where(eq(collectionsTable.id, req.params.id))
       .returning({ id: collectionsTable.id });
 
-    if (deleted.length === 0) {
-      return res.status(404).json({ error: "Collection not found" });
-    }
+    if (deleted.length === 0) throw new HttpError(404, "Collection not found");
     res.status(204).send();
   })
 );
 
 // Add paper to collection
+//
+// FIX: the previous version did read -> mutate in JS -> write, which is a
+// classic lost-update race condition: two concurrent requests adding
+// different papers to the same collection could read the same paperIds
+// array, and whichever write lands second would silently overwrite the
+// first paper's addition. This now runs inside a transaction with a
+// row-level lock (SELECT ... FOR UPDATE) so concurrent writers to the same
+// collection are serialized instead of racing. (Postgres-specific — adapt
+// the locking primitive if you're on a different dialect.)
 router.post(
   "/:id/papers",
   asyncHandler(async (req, res) => {
     const { paperId } = req.body as { paperId?: string };
-    if (!paperId || !paperId.trim()) {
-      return res.status(400).json({ error: "paperId is required" });
-    }
+    if (!paperId || !paperId.trim()) throw new HttpError(400, "paperId is required");
 
-    const [collection] = await db
-      .select()
-      .from(collectionsTable)
-      .where(eq(collectionsTable.id, req.params.id))
-      .limit(1);
-    if (!collection) return res.status(404).json({ error: "Collection not found" });
+    const [paper] = await db.select().from(papersTable).where(eq(papersTable.id, paperId)).limit(1);
+    if (!paper) throw new HttpError(404, "Paper not found");
 
-    // Make sure the paper actually exists before attaching it
-    const [paper] = await db
-      .select()
-      .from(papersTable)
-      .where(eq(papersTable.id, paperId))
-      .limit(1);
-    if (!paper) return res.status(404).json({ error: "Paper not found" });
+    const updatedCollection = await db.transaction(async (tx) => {
+      const [collection] = await tx
+        .select()
+        .from(collectionsTable)
+        .where(eq(collectionsTable.id, req.params.id))
+        .for("update")
+        .limit(1);
+      if (!collection) throw new HttpError(404, "Collection not found");
 
-    const paperIds = (collection.paperIds as string[]) ?? [];
-    if (!paperIds.includes(paperId)) {
-      paperIds.push(paperId);
-      await db
-        .update(collectionsTable)
-        .set({ paperIds, paperCount: paperIds.length })
-        .where(eq(collectionsTable.id, req.params.id));
-    }
+      const paperIds = (collection.paperIds as string[]) ?? [];
+      if (!paperIds.includes(paperId)) {
+        paperIds.push(paperId);
+        await tx
+          .update(collectionsTable)
+          .set({ paperIds, paperCount: paperIds.length })
+          .where(eq(collectionsTable.id, req.params.id));
+      }
 
-    res.json(
-      serializeCollection(
-        { ...collection, paperIds, paperCount: paperIds.length },
-        [paper]
-      )
-    );
+      return { ...collection, paperIds, paperCount: paperIds.length };
+    });
+
+    res.json(serializeCollection(updatedCollection, [paper]));
   })
 );
 
-// Remove paper from collection
+// Remove paper from collection (same lock-based transaction as above)
 router.delete(
   "/:id/papers/:paperId",
   asyncHandler(async (req, res) => {
-    const [collection] = await db
-      .select()
-      .from(collectionsTable)
-      .where(eq(collectionsTable.id, req.params.id))
-      .limit(1);
-    if (!collection) return res.status(404).json({ error: "Collection not found" });
+    const updatedCollection = await db.transaction(async (tx) => {
+      const [collection] = await tx
+        .select()
+        .from(collectionsTable)
+        .where(eq(collectionsTable.id, req.params.id))
+        .for("update")
+        .limit(1);
+      if (!collection) throw new HttpError(404, "Collection not found");
 
-    const paperIds = ((collection.paperIds as string[]) ?? []).filter(
-      (id) => id !== req.params.paperId
-    );
+      const paperIds = ((collection.paperIds as string[]) ?? []).filter(
+        (id) => id !== req.params.paperId
+      );
 
-    await db
-      .update(collectionsTable)
-      .set({ paperIds, paperCount: paperIds.length })
-      .where(eq(collectionsTable.id, req.params.id));
+      await tx
+        .update(collectionsTable)
+        .set({ paperIds, paperCount: paperIds.length })
+        .where(eq(collectionsTable.id, req.params.id));
 
-    res.json(
-      serializeCollection({ ...collection, paperIds, paperCount: paperIds.length })
-    );
+      return { ...collection, paperIds, paperCount: paperIds.length };
+    });
+
+    res.json(serializeCollection(updatedCollection));
   })
 );
 
