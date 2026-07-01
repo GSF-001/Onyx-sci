@@ -1,3 +1,4 @@
+// papers.ts
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { papersTable } from "@workspace/db";
@@ -7,7 +8,7 @@ import { generateId } from "../lib/id";
 const router = Router();
 
 // Get saved papers
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
   try {
     const papers = await db
       .select()
@@ -52,45 +53,49 @@ router.post("/:id/save", async (req, res) => {
   const paperData = req.body;
 
   try {
-    const existing = await db
-      .select()
-      .from(papersTable)
-      .where(eq(papersTable.id, id))
-      .limit(1);
+    const values = {
+      id: id || generateId(),
+      title: paperData.title ?? "Untitled Paper",
+      authors: paperData.authors ?? [],
+      year: paperData.year ?? new Date().getFullYear(),
+      abstract: paperData.abstract ?? "",
+      journal: paperData.journal ?? null,
+      citationCount: paperData.citationCount ?? 0,
+      doi: paperData.doi ?? null,
+      arxivId: paperData.arxivId ?? null,
+      url: paperData.url ?? null,
+      field: paperData.field ?? null,
+      keywords: paperData.keywords ?? [],
+      noveltyScore: paperData.noveltyScore ?? null,
+      relevanceScore: paperData.relevanceScore ?? null,
+      isOpenAccess: paperData.isOpenAccess ?? false,
+      savedAt: new Date(),
+    };
 
-    if (existing.length > 0) {
-      const [updated] = await db
-        .update(papersTable)
-        .set({ savedAt: new Date() })
-        .where(eq(papersTable.id, id))
-        .returning();
-      return res.json({
-        ...updated,
-        authors: (updated.authors as string[]) ?? [],
-        keywords: (updated.keywords as string[]) ?? [],
-        savedAt: updated.savedAt?.toISOString() ?? null,
-      });
-    }
-
+    // Single atomic upsert: no select-then-write race condition, and on conflict
+    // we overwrite the full row with the new metadata (not just savedAt).
     const [saved] = await db
       .insert(papersTable)
-      .values({
-        id: id || generateId(),
-        title: paperData.title ?? "Untitled Paper",
-        authors: paperData.authors ?? [],
-        year: paperData.year ?? new Date().getFullYear(),
-        abstract: paperData.abstract ?? "",
-        journal: paperData.journal ?? null,
-        citationCount: paperData.citationCount ?? 0,
-        doi: paperData.doi ?? null,
-        arxivId: paperData.arxivId ?? null,
-        url: paperData.url ?? null,
-        field: paperData.field ?? null,
-        keywords: paperData.keywords ?? [],
-        noveltyScore: paperData.noveltyScore ?? null,
-        relevanceScore: paperData.relevanceScore ?? null,
-        isOpenAccess: paperData.isOpenAccess ?? false,
-        savedAt: new Date(),
+      .values(values)
+      .onConflictDoUpdate({
+        target: papersTable.id,
+        set: {
+          title: values.title,
+          authors: values.authors,
+          year: values.year,
+          abstract: values.abstract,
+          journal: values.journal,
+          citationCount: values.citationCount,
+          doi: values.doi,
+          arxivId: values.arxivId,
+          url: values.url,
+          field: values.field,
+          keywords: values.keywords,
+          noveltyScore: values.noveltyScore,
+          relevanceScore: values.relevanceScore,
+          isOpenAccess: values.isOpenAccess,
+          savedAt: values.savedAt,
+        },
       })
       .returning();
 
