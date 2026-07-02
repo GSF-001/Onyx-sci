@@ -4,14 +4,14 @@ import { pinoHttp } from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 import router from "./routes";
-import { logger } from "./lib/logger";
+import { rootLogger } from "./lib/logger";
 import { CLERK_PROXY_PATH, clerkProxyMiddleware, getClerkProxyHost } from "./middlewares/clerkProxyMiddleware";
 
 const app: Express = express();
 
 app.use(
   pinoHttp({
-    logger,
+    logger: rootLogger,
     serializers: {
       req(req) {
         return {
