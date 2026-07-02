@@ -46,46 +46,46 @@ const clerkAppearance = {
   options: {
     logoPlacement: "inside" as const,
     logoLinkUrl: basePath || "/",
-    logoImageUrl: `${window.location.origin}${basePath}/oasis-logo.png`,
+    logoImageUrl: `${window.location.origin}${basePath}/onyx-logo-transparent.png`,
     socialButtonsPlacement: "top" as const,
     socialButtonsVariant: "blockButton" as const,
   },
   variables: {
-    colorPrimary: "#111111",
-    colorForeground: "#111111",
-    colorMutedForeground: "#6b7280",
-    colorDanger: "#dc2626",
-    colorBackground: "#ffffff",
-    colorInput: "#f9fafb",
-    colorInputForeground: "#111111",
-    colorNeutral: "#e5e7eb",
+    colorPrimary: "#ffffff",
+    colorForeground: "#ffffff",
+    colorMutedForeground: "#94a3b8",
+    colorDanger: "#f87171",
+    colorBackground: "#09090f",
+    colorInput: "#0f0f18",
+    colorInputForeground: "#ffffff",
+    colorNeutral: "#1e293b",
     fontFamily: "Inter, system-ui, sans-serif",
     borderRadius: "0.75rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden shadow-xl border border-neutral-100",
+    cardBox: "bg-[#09090f] rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl border border-white/10",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: "text-neutral-900 font-bold text-xl",
+    headerTitle: "text-white font-black text-xl",
     headerSubtitle: "text-neutral-500 text-sm",
-    socialButtonsBlockButtonText: "text-neutral-700 font-medium",
-    formFieldLabel: "text-neutral-700 text-sm font-medium",
-    footerActionLink: "text-neutral-900 font-semibold hover:underline",
+    socialButtonsBlockButtonText: "text-neutral-300 font-medium",
+    formFieldLabel: "text-neutral-400 text-sm font-medium",
+    footerActionLink: "text-white font-semibold hover:underline",
     footerActionText: "text-neutral-500",
-    dividerText: "text-neutral-400 text-xs",
-    identityPreviewEditButton: "text-neutral-700",
-    formFieldSuccessText: "text-green-600",
-    alertText: "text-neutral-700",
+    dividerText: "text-neutral-600 text-xs",
+    identityPreviewEditButton: "text-neutral-400",
+    formFieldSuccessText: "text-emerald-400",
+    alertText: "text-neutral-400",
     logoBox: "flex justify-center mb-2",
     logoImage: "w-12 h-12 object-contain",
-    socialButtonsBlockButton: "border border-neutral-200 hover:bg-neutral-50 rounded-xl",
-    formButtonPrimary: "bg-neutral-900 hover:bg-neutral-700 text-white rounded-xl font-semibold",
-    formFieldInput: "border border-neutral-200 bg-neutral-50 text-neutral-900 rounded-xl",
-    footerAction: "bg-neutral-50 border-t border-neutral-100",
-    dividerLine: "bg-neutral-200",
-    alert: "bg-red-50 border border-red-200 rounded-xl",
-    otpCodeFieldInput: "border border-neutral-200 rounded-xl",
+    socialButtonsBlockButton: "border border-white/10 hover:bg-white/6 rounded-xl bg-white/3",
+    formButtonPrimary: "bg-white hover:bg-neutral-100 text-black rounded-xl font-bold",
+    formFieldInput: "border border-white/10 bg-white/5 text-white rounded-xl placeholder:text-neutral-600",
+    footerAction: "bg-white/3 border-t border-white/5",
+    dividerLine: "bg-white/10",
+    alert: "bg-red-500/10 border border-red-500/20 rounded-xl",
+    otpCodeFieldInput: "border border-white/10 rounded-xl bg-white/5 text-white",
     formFieldRow: "mb-1",
     main: "px-6 pb-6",
   },
@@ -93,30 +93,22 @@ const clerkAppearance = {
 
 function SignInPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-      <div className="w-full">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_60%)] pointer-events-none" />
+      <div className="w-full relative z-10">
         <div className="text-center mb-8">
           <div className="flex flex-col items-center gap-1 mb-2">
-            <div className="font-black text-xl tracking-[0.08em] text-neutral-900">OASIS</div>
-            <div className="font-medium text-xs tracking-[0.14em] text-neutral-500">Research</div>
+            <img src={`${basePath}/onyx-logo-transparent.png`} alt="ONYX" className="w-12 h-12 object-contain mb-1" />
+            <div className="font-black text-xl tracking-[0.12em] text-white">ONYX</div>
+            <div className="font-medium text-xs tracking-[0.22em] text-neutral-500 uppercase">research</div>
           </div>
-          <p className="text-xs text-neutral-400">Platform Intelijen Riset Ilmiah</p>
+          <p className="text-xs text-neutral-600 mt-1">AI-Powered Research Intelligence</p>
         </div>
         <SignIn
           routing="path"
           path={`${basePath}/sign-in`}
           signUpUrl={`${basePath}/sign-up`}
           appearance={clerkAppearance}
-          localization={{
-            signIn: {
-              start: {
-                title: "Selamat Datang",
-                subtitle: "Masuk untuk melanjutkan ke OASIS Research",
-                actionText: "Belum punya akun?",
-                actionLink: "Daftar gratis",
-              },
-            },
-          }}
         />
       </div>
     </div>
@@ -125,30 +117,22 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-      <div className="w-full">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_60%)] pointer-events-none" />
+      <div className="w-full relative z-10">
         <div className="text-center mb-8">
           <div className="flex flex-col items-center gap-1 mb-2">
-            <div className="font-black text-xl tracking-[0.08em] text-neutral-900">OASIS</div>
-            <div className="font-medium text-xs tracking-[0.14em] text-neutral-500">Research</div>
+            <img src={`${basePath}/onyx-logo-transparent.png`} alt="ONYX" className="w-12 h-12 object-contain mb-1" />
+            <div className="font-black text-xl tracking-[0.12em] text-white">ONYX</div>
+            <div className="font-medium text-xs tracking-[0.22em] text-neutral-500 uppercase">research</div>
           </div>
-          <p className="text-xs text-neutral-400">Platform Intelijen Riset Ilmiah</p>
+          <p className="text-xs text-neutral-600 mt-1">AI-Powered Research Intelligence</p>
         </div>
         <SignUp
           routing="path"
           path={`${basePath}/sign-up`}
           signInUrl={`${basePath}/sign-in`}
           appearance={clerkAppearance}
-          localization={{
-            signUp: {
-              start: {
-                title: "Buat Akun Gratis",
-                subtitle: "Mulai riset Anda bersama OASIS Research",
-                actionText: "Sudah punya akun?",
-                actionLink: "Masuk",
-              },
-            },
-          }}
         />
       </div>
     </div>
