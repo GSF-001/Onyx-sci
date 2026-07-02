@@ -16,7 +16,6 @@ import {
   Loader2,
   FileText,
 } from "lucide-react";
-import OasisLogo from "../components/OasisLogo";
 
 interface Paper {
   id: string;
@@ -32,133 +31,68 @@ interface Paper {
 }
 
 const TRENDING = [
-  "pelipatan protein",
-  "CRISPR kanker",
-  "model bahasa besar",
-  "sel tunggal RNA",
-  "energi terbarukan",
-  "komputasi kuantum",
+  "protein folding",
+  "CRISPR cancer",
+  "large language models",
+  "single-cell RNA",
+  "renewable energy",
+  "quantum computing",
 ];
 
 const modules = [
   {
     icon: Search,
-    label: "Pencarian Semantik",
+    label: "Semantic Search",
     href: "/search",
-    color: "bg-blue-50 text-blue-600",
-    ringColor: "ring-blue-100",
-    description:
-      "Temukan makalah yang paling relevan menggunakan bahasa alami dan pemahaman semantik.",
-    preview: (
-      <div className="bg-neutral-900 rounded-xl p-3 text-white text-xs font-mono">
-        <div className="flex items-center gap-2 bg-neutral-800 rounded-lg px-3 py-2 mb-2">
-          <Search className="w-3 h-3 text-neutral-400 flex-shrink-0" />
-          <span className="text-neutral-300 truncate">pelipatan protein dengan deep learning</span>
-        </div>
-        <div className="text-neutral-500 text-[10px]">12.458 hasil ditemukan</div>
-      </div>
-    ),
+    accentColor: "text-sky-400",
+    bgColor: "bg-sky-400/8",
+    borderColor: "border-sky-400/15",
+    description: "Find the most relevant papers using natural language and semantic understanding.",
   },
   {
     icon: Sparkles,
-    label: "Kopilot AI",
+    label: "AI Copilot",
     href: "/copilot",
-    color: "bg-purple-50 text-purple-600",
-    ringColor: "ring-purple-100",
-    description:
-      "Dapatkan ringkasan, sintesis, dan jawaban berbasis AI dengan kutipan nyata dari literatur.",
-    preview: (
-      <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-xs space-y-2">
-        <div className="bg-purple-100 rounded-lg px-3 py-1.5 text-purple-800 text-right text-[11px]">
-          Apa saja pendekatan baru dalam pelipatan protein?
-        </div>
-        <div className="text-neutral-600 text-[11px] leading-relaxed">
-          Berdasarkan 24 makalah, berikut adalah kemajuan-kemajuan utama...
-        </div>
-      </div>
-    ),
+    accentColor: "text-violet-400",
+    bgColor: "bg-violet-400/8",
+    borderColor: "border-violet-400/15",
+    description: "Get AI-generated summaries, synthesis, and answers with real citations from literature.",
   },
   {
     icon: Network,
-    label: "Grafik Pengetahuan",
+    label: "Knowledge Graph",
     href: "/graph",
-    color: "bg-green-50 text-green-600",
-    ringColor: "ring-green-100",
-    description:
-      "Visualisasikan hubungan antara makalah, penulis, konsep, dan bidang penelitian.",
-    preview: (
-      <div className="bg-green-50 border border-green-100 rounded-xl p-3 flex items-center justify-center min-h-[72px]">
-        <div className="flex items-center gap-1">
-          {["ML", "DL", "RL", "NLP"].map((n, i) => (
-            <React.Fragment key={n}>
-              <span className="text-[10px] font-semibold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full">{n}</span>
-              {i < 3 && <span className="text-green-300 text-[10px]">—</span>}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-    ),
+    accentColor: "text-emerald-400",
+    bgColor: "bg-emerald-400/8",
+    borderColor: "border-emerald-400/15",
+    description: "Visualize relationships between papers, authors, concepts, and research fields.",
   },
   {
     icon: Lightbulb,
-    label: "Penemuan Celah",
+    label: "Gap Discovery",
     href: "/gaps",
-    color: "bg-yellow-50 text-yellow-600",
-    ringColor: "ring-yellow-100",
-    description:
-      "Identifikasi area penelitian yang kurang dieksplorasi dan temukan peluang terobosan.",
-    preview: (
-      <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 space-y-1.5">
-        {["Dampak iklim pada coral reef", "Teknik mitigasi karbon"].map((g) => (
-          <div key={g} className="flex items-center gap-1.5 text-[10px] text-yellow-800">
-            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" />
-            {g}
-          </div>
-        ))}
-      </div>
-    ),
+    accentColor: "text-amber-400",
+    bgColor: "bg-amber-400/8",
+    borderColor: "border-amber-400/15",
+    description: "Identify underexplored research areas and discover breakthrough opportunities.",
   },
   {
     icon: TrendingUp,
-    label: "Tren Kebaruan",
+    label: "Novelty Trends",
     href: "/trends",
-    color: "bg-orange-50 text-orange-600",
-    ringColor: "ring-orange-100",
-    description:
-      "Lacak topik-topik yang sedang meningkat dan prediksi arah penelitian masa depan.",
-    preview: (
-      <div className="bg-orange-50 border border-orange-100 rounded-xl p-3">
-        <div className="space-y-1">
-          {[["LLM", 94], ["Kuantum", 87], ["CRISPR", 81]].map(([label, val]) => (
-            <div key={label} className="flex items-center gap-2">
-              <span className="text-[10px] text-orange-700 w-12">{label}</span>
-              <div className="flex-1 bg-orange-100 rounded-full h-1.5">
-                <div className="bg-orange-400 h-1.5 rounded-full" style={{ width: `${val}%` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    accentColor: "text-orange-400",
+    bgColor: "bg-orange-400/8",
+    borderColor: "border-orange-400/15",
+    description: "Track rising topics and predict the direction of future research.",
   },
   {
     icon: Users,
-    label: "Kolaborasi",
+    label: "Collaborate",
     href: "/collaborate",
-    color: "bg-pink-50 text-pink-600",
-    ringColor: "ring-pink-100",
-    description:
-      "Terhubung dengan peneliti yang bekerja di area yang sama dan kelola proyek riset.",
-    preview: (
-      <div className="bg-pink-50 border border-pink-100 rounded-xl p-3 flex items-center gap-2">
-        {["A", "B", "C", "D"].map((l) => (
-          <div key={l} className="w-7 h-7 rounded-full bg-pink-200 flex items-center justify-center text-[11px] font-bold text-pink-700 border-2 border-white -ml-2 first:ml-0">
-            {l}
-          </div>
-        ))}
-        <span className="text-[10px] text-pink-700 ml-1">4 peneliti aktif</span>
-      </div>
-    ),
+    accentColor: "text-pink-400",
+    bgColor: "bg-pink-400/8",
+    borderColor: "border-pink-400/15",
+    description: "Connect with researchers in the same field and manage research projects.",
   },
 ];
 
@@ -195,7 +129,7 @@ export default function Home() {
       setTotal(data.total ?? 0);
       setAiSummary(data.aiSummary ?? null);
     } catch {
-      setError("Pencarian gagal. Silakan coba lagi.");
+      setError("Search failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -218,64 +152,64 @@ export default function Home() {
   const hasResults = results.length > 0;
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className="min-h-screen bg-[#050505] text-neutral-100 font-sans">
       {/* Hero + Search */}
       <div className="px-4 pt-8 pb-6 max-w-2xl mx-auto">
         {/* Logo + Name */}
         <div className="flex items-center gap-3 mb-6">
-          <OasisLogo size={32} color="#111" />
+          <img src="/onyx-logo-transparent.png" alt="ONYX" className="w-8 h-8 object-contain" />
           <div className="leading-none">
-            <div className="font-black text-base tracking-[0.08em] text-neutral-900">OASIS</div>
-            <div className="font-medium text-[10px] tracking-[0.14em] text-neutral-500 -mt-0.5">Research</div>
+            <div className="font-black text-base tracking-[0.12em] text-white">ONYX</div>
+            <div className="font-medium text-[9px] tracking-[0.2em] text-neutral-500 -mt-0.5 uppercase">research</div>
           </div>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2 leading-tight">
-          Alat Canggih untuk<br />Penelitian Terobosan
+        <h1 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight tracking-tight">
+          Advanced Tools for<br />Breakthrough Research
         </h1>
         <p className="text-neutral-500 text-sm mb-5 leading-relaxed">
-          Cari jutaan makalah, pahami temuan penting,<br className="hidden md:block" />
-          dan temukan celah penelitian dengan AI.
+          Search millions of papers, understand key findings,<br className="hidden md:block" />
+          and discover research gaps with AI.
         </p>
 
         {/* Search box */}
         <form onSubmit={handleSubmit}>
-          <div className="flex items-center border border-neutral-200 rounded-2xl px-4 py-3 focus-within:border-neutral-400 focus-within:shadow-sm transition-all bg-white shadow-sm">
-            <Search className="w-4 h-4 text-neutral-400 flex-shrink-0 mr-3" />
+          <div className="flex items-center border border-white/10 rounded-2xl px-4 py-3 focus-within:border-white/25 focus-within:bg-white/3 transition-all bg-white/4 shadow-sm">
+            <Search className="w-4 h-4 text-neutral-600 flex-shrink-0 mr-3" />
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent text-sm outline-none text-neutral-900 placeholder:text-neutral-400"
-              placeholder="Cari makalah, konsep, metode, peneliti, atau ajukan pertanyaan..."
+              className="flex-1 bg-transparent text-sm outline-none text-neutral-100 placeholder:text-neutral-600"
+              placeholder="Search papers, concepts, methods, researchers..."
             />
             {query && (
-              <button type="button" onClick={clearSearch} className="text-neutral-400 hover:text-neutral-600 mx-1">
+              <button type="button" onClick={clearSearch} className="text-neutral-600 hover:text-neutral-400 mx-1">
                 <X className="w-4 h-4" />
               </button>
             )}
             <button
               type="submit"
               disabled={!query.trim() || loading}
-              className="ml-2 px-4 py-1.5 bg-neutral-900 text-white text-sm font-medium rounded-xl hover:bg-neutral-700 disabled:opacity-40 transition-colors flex items-center gap-1.5 flex-shrink-0"
+              className="ml-2 px-4 py-1.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-neutral-100 disabled:opacity-30 transition-colors flex items-center gap-1.5 flex-shrink-0"
             >
-              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Cari"}
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Search"}
             </button>
           </div>
         </form>
 
-        {/* Trending — only when no search */}
+        {/* Trending suggestions */}
         {!hasResults && !loading && (
           <div className="mt-4">
-            <p className="text-xs text-neutral-400 mb-2">Coba pencarian populer</p>
+            <p className="text-xs text-neutral-600 mb-2">Try popular searches</p>
             <div className="flex flex-wrap gap-2">
               {TRENDING.map((t) => (
                 <button
                   key={t}
                   onClick={() => { setQuery(t); doSearch(t); }}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-neutral-200 rounded-full text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50 transition-colors"
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-white/8 rounded-full text-neutral-500 hover:border-white/20 hover:text-neutral-200 hover:bg-white/4 transition-all"
                 >
-                  <Search className="w-3 h-3 text-neutral-400" />
+                  <Search className="w-3 h-3 text-neutral-600" />
                   {t}
                 </button>
               ))}
@@ -287,7 +221,7 @@ export default function Home() {
       {/* Error */}
       {error && (
         <div className="max-w-2xl mx-auto px-4 mb-4">
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{error}</div>
+          <div className="text-sm text-red-400 bg-red-500/8 border border-red-500/20 rounded-xl px-4 py-3">{error}</div>
         </div>
       )}
 
@@ -295,13 +229,13 @@ export default function Home() {
       {loading && (
         <div className="max-w-2xl mx-auto px-4 space-y-3 mb-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="border border-neutral-100 rounded-2xl p-4 animate-pulse">
+            <div key={i} className="border border-white/6 rounded-2xl p-4 animate-pulse">
               <div className="flex gap-3">
-                <div className="w-9 h-9 bg-neutral-100 rounded-lg flex-shrink-0" />
+                <div className="w-9 h-9 bg-white/5 rounded-lg flex-shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-neutral-100 rounded w-3/4" />
-                  <div className="h-3 bg-neutral-100 rounded w-1/3" />
-                  <div className="h-3 bg-neutral-100 rounded w-full" />
+                  <div className="h-4 bg-white/5 rounded w-3/4" />
+                  <div className="h-3 bg-white/5 rounded w-1/3" />
+                  <div className="h-3 bg-white/5 rounded w-full" />
                 </div>
               </div>
             </div>
@@ -312,75 +246,63 @@ export default function Home() {
       {/* Search Results */}
       {hasResults && !loading && (
         <div className="max-w-2xl mx-auto px-4 pb-8">
-          {/* Result count + filter */}
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm text-neutral-600">
-              Hasil untuk: <span className="font-semibold text-neutral-900">"{submitted}"</span>
-              <span className="text-neutral-400 ml-2 text-xs">{total.toLocaleString()} hasil ditemukan</span>
+            <p className="text-sm text-neutral-500">
+              Results for: <span className="font-semibold text-neutral-200">"{submitted}"</span>
+              <span className="text-neutral-600 ml-2 text-xs">{total.toLocaleString()} found</span>
             </p>
             <button
               onClick={() => setLocation("/search")}
-              className="text-xs text-neutral-500 border border-neutral-200 rounded-lg px-2.5 py-1 hover:border-neutral-400 hover:text-neutral-900 transition-colors flex items-center gap-1"
+              className="text-xs text-neutral-500 border border-white/8 rounded-lg px-2.5 py-1 hover:border-white/20 hover:text-neutral-200 transition-colors flex items-center gap-1"
             >
               Filter <ArrowRight className="w-3 h-3" />
             </button>
           </div>
 
-          {/* AI Summary */}
           {aiSummary && (
-            <div className="mb-4 px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-700 leading-relaxed">
-              <span className="font-semibold text-neutral-900 mr-1.5">Ringkasan AI</span>
+            <div className="mb-4 px-4 py-3 bg-sky-500/6 border border-sky-500/15 rounded-xl text-sm text-neutral-300 leading-relaxed">
+              <span className="font-semibold text-sky-400 mr-1.5">AI Summary</span>
               {aiSummary}
             </div>
           )}
 
-          {/* Paper cards */}
           <div className="space-y-3">
             {results.map((paper) => (
               <article
                 key={paper.id}
-                className="flex gap-3 border border-neutral-100 rounded-2xl p-4 hover:border-neutral-200 hover:shadow-sm transition-all group"
+                className="flex gap-3 border border-white/6 rounded-2xl p-4 hover:border-white/12 hover:bg-white/2 transition-all group"
               >
-                {/* Icon */}
-                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-9 h-9 rounded-xl bg-white/6 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <FileText className="w-4 h-4 text-neutral-500" />
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  {/* Title */}
                   <a
                     href={paper.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-sm font-semibold text-neutral-900 group-hover:text-blue-700 transition-colors leading-snug mb-0.5"
+                    className="block text-sm font-semibold text-neutral-200 group-hover:text-sky-400 transition-colors leading-snug mb-0.5"
                   >
                     {paper.title}
                   </a>
-
-                  {/* Authors + year + journal */}
-                  <p className="text-xs text-neutral-500 mb-1.5">
+                  <p className="text-xs text-neutral-600 mb-1.5">
                     {paper.authors.slice(0, 3).join(", ")}{paper.authors.length > 3 ? ", et al." : ""}
                     {paper.year && <> · {paper.year}</>}
                     {paper.journal && <> · <span className="italic">{paper.journal}</span></>}
                   </p>
-
-                  {/* Abstract */}
                   {paper.abstract && (
                     <p className="text-xs text-neutral-600 leading-relaxed line-clamp-2 mb-2">
                       {paper.abstract}
                     </p>
                   )}
-
-                  {/* Bottom row */}
                   <div className="flex items-center gap-3 flex-wrap">
                     {paper.citationCount > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-neutral-500">
+                      <span className="flex items-center gap-1 text-xs text-neutral-600">
                         <Quote className="w-3 h-3" />
-                        {paper.citationCount.toLocaleString()} sitasi
+                        {paper.citationCount.toLocaleString()} citations
                       </span>
                     )}
                     {paper.isOpenAccess && (
-                      <span className="text-[10px] px-2 py-0.5 bg-green-50 border border-green-200 text-green-700 rounded-full font-medium">
+                      <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full font-medium">
                         Open Access
                       </span>
                     )}
@@ -389,24 +311,22 @@ export default function Home() {
                         href={paper.pdfUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                        className="flex items-center gap-1 text-xs text-sky-500 hover:text-sky-400 transition-colors"
                       >
                         <BookOpen className="w-3 h-3" />
-                        PDF Tersedia
+                        PDF
                       </a>
                     )}
-
-                    {/* Right-side actions */}
                     <div className="ml-auto flex items-center gap-3">
-                      <button className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-700 transition-colors">
+                      <button className="flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-300 transition-colors">
                         <Bookmark className="w-3 h-3" />
-                        Simpan
+                        Save
                       </button>
                       <a
                         href={paper.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-700 transition-colors"
+                        className="flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-300 transition-colors"
                       >
                         <ExternalLink className="w-3 h-3" />
                       </a>
@@ -417,49 +337,38 @@ export default function Home() {
             ))}
           </div>
 
-          {/* See more */}
           {total > results.length && (
             <div className="text-center mt-5">
               <button
                 onClick={() => setLocation("/search")}
-                className="text-sm text-neutral-600 hover:text-neutral-900 border border-neutral-200 rounded-xl px-5 py-2.5 hover:border-neutral-400 transition-colors"
+                className="text-sm text-neutral-500 hover:text-neutral-200 border border-white/8 rounded-xl px-5 py-2.5 hover:border-white/20 transition-colors"
               >
-                Lihat semua hasil di Pencarian Semantik →
+                View all results in Semantic Search →
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Module feature cards — always shown when not searching */}
+      {/* Module cards */}
       {!hasResults && !loading && (
         <div className="max-w-2xl mx-auto px-4 pb-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {modules.map((mod) => {
               const Icon = mod.icon;
               return (
                 <button
                   key={mod.href}
                   onClick={() => setLocation(mod.href)}
-                  className="text-left border border-neutral-100 rounded-2xl p-5 hover:border-neutral-200 hover:shadow-sm transition-all group"
+                  className="text-left border border-white/6 rounded-2xl p-5 hover:border-white/12 hover:bg-white/2 transition-all group"
                 >
-                  {/* Preview */}
-                  <div className="mb-4">{mod.preview}</div>
-
-                  {/* Icon + Label */}
-                  <div className="flex items-center gap-2.5 mb-1.5">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${mod.color} ring-1 ${mod.ringColor}`}>
-                      <Icon className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="font-semibold text-sm text-neutral-900">{mod.label}</span>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${mod.bgColor} border ${mod.borderColor}`}>
+                    <Icon className={`w-4 h-4 ${mod.accentColor}`} />
                   </div>
-
-                  {/* Description */}
-                  <p className="text-xs text-neutral-500 leading-relaxed mb-3">{mod.description}</p>
-
-                  {/* CTA */}
-                  <div className="flex items-center gap-1 text-xs font-medium text-neutral-700 group-hover:text-neutral-900 transition-colors">
-                    Pelajari selengkapnya
+                  <div className="font-semibold text-sm text-neutral-200 mb-1.5">{mod.label}</div>
+                  <p className="text-xs text-neutral-600 leading-relaxed mb-3">{mod.description}</p>
+                  <div className={`flex items-center gap-1 text-xs font-medium ${mod.accentColor} opacity-70 group-hover:opacity-100 transition-opacity`}>
+                    Explore
                     <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </button>
