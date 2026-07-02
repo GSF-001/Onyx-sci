@@ -1,6 +1,6 @@
 import rateLimit, { Options, Store } from 'express-rate-limit';
 import { Request, Response } from 'express';
-import { TooManyRequestsError } from './errorMiddleware';
+import { TooManyRequestsError } from './error-middlewares';
 import { logger } from './loggerMiddleware';
 
 function rateLimitHandler(req: Request, res: Response): void {
