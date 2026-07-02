@@ -82,11 +82,17 @@ export class GroqClient {
     this.sdk = new Groq({
       apiKey: options.apiKey ?? requireEnv("GROQ_API_KEY"),
       baseURL: (options.baseUrl ?? optionalEnv("GROQ_BASE_URL")) || undefined,
+    });
+
+    this.defaultModel =
+      options.defaultModel ??
+      optionalEnv("GROQ_DEFAULT_MODEL", "llama-3.3-70b-versatile");
+  }
+
   private buildParams(messages: GroqMessage[], options: GroqChatOptions): Omit<
     ChatCompletionCreateParamsNonStreaming,
     "stream"
   > {
-   
     return {
       model: options.model ?? this.defaultModel,
       messages,
