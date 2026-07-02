@@ -1,5 +1,5 @@
 import cors, { CorsOptions } from 'cors';
-import { UnauthorizedError } from './errorMiddleware';
+import { UnauthorizedError } from './error-middlewares';
 
 // Comma separated list of allowed origins, e.g:
 // CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
