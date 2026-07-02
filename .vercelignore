@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Docs
+README.md
+CONTRIBUTING.md
+SECURITY.md
+ARCHITECTURE.md
+docs/
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# CI/CD
+.github/
+
+# Database
+*.db
+*.sqlite
+drizzle/

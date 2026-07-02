@@ -1,0 +1,13 @@
+[build]
+builder = "dockerfile"
+dockerfile = "Dockerfile.railway"
+
+[deploy]
+startCommand = "pnpm run db:push && node --enable-source-maps ./artifacts/api-server/dist/index.mjs"
+restartPolicyType = "always"
+restartPolicyMaxRetries = 5
+
+[healthcheck]
+path = "/health"
+interval = 30
+timeout = 5
