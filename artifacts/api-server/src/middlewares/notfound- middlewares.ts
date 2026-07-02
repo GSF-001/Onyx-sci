@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { NotFoundError } from './errorMiddleware';
+import { NotFoundError } from './error-middlewares';
 
 /**
  * Catches any request that didn't match a defined route and forwards a
