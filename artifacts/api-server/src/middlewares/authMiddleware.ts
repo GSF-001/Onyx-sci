@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '@clerk/backend';
-import { UnauthorizedError, asyncHandler } from './errorMiddleware';
+import { UnauthorizedError, asyncHandler } from './error-middlewares';
 
 declare global {
   namespace Express {
