@@ -23,7 +23,7 @@ function respondHealthCheck(res: import("express").Response, status: "ok") {
   if (!parsed.success) {
     return res.status(500).json({ status: "error", error: "Invalid health check response shape" });
   }
-  res.json(parsed.data);
+  return res.json(parsed.data);
 }
 
 // Liveness — is the process itself up and responsive? Deliberately does NOT
