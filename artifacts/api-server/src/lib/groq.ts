@@ -205,3 +205,17 @@ export function getGroqClient(): GroqClient {
   }
   return defaultClient;
 }
+
+/**
+ * Convenience standalone helper used by route handlers: sends a chat
+ * completion request via the process-wide default client and returns just
+ * the assistant's text reply (equivalent to
+ * `response.choices[0].message.content`).
+ */
+export async function chatCompletion(
+  messages: GroqMessage[],
+  options: GroqChatOptions = {}
+): Promise<string> {
+  const response = await getGroqClient().chat(messages, options);
+  return response.choices[0]?.message?.content ?? "";
+}
