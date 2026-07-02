@@ -1,0 +1,48 @@
+// Tambahkan/merge model ini ke schema.prisma utama lo.
+// Kalau User model udah ada, tinggal tambahin field-field yang belum ada.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String    @id @default(uuid())
+  email                  String    @unique
+  passwordHash           String
+  name                   String
+  emailVerified          Boolean   @default(false)
+  emailVerifyToken       String?   @unique
+  emailVerifyExpires     DateTime?
+  passwordResetToken     String?   @unique
+  passwordResetExpires   DateTime?
+  refreshTokens          RefreshToken[]
+  role                   Role      @default(USER)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  tokenHash   String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  userAgent   String?
+  ipAddress   String?
+
+  @@index([userId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
