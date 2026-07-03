@@ -1,18 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowRight, Search, Brain, BarChart2, Zap } from "lucide-react";
+import { Search, Sparkles, Network, Lightbulb, TrendingUp, Users, ArrowRight, ChevronRight } from "lucide-react";
 
-const STAT_FEATURES = [
-  { icon: Search, label: "100M+", sub: "Research Papers" },
-  { icon: Brain, label: "AI-Powered", sub: "Insights" },
-  { icon: BarChart2, label: "Deep", sub: "Analytics" },
-  { icon: Zap, label: "Faster", sub: "Discoveries" },
+const FEATURES = [
+  { num: "01", icon: Search,     label: "Semantic Search",   desc: "Find any paper across 280M+ sources using natural language — no Boolean syntax, no keyword guessing.", accent: "from-blue-500 to-cyan-400",    glow: "rgba(59,130,246,0.3)" },
+  { num: "02", icon: Sparkles,   label: "AI Copilot",        desc: "Ask questions grounded in real scientific literature. Get cited answers, not hallucinations.",          accent: "from-violet-500 to-purple-400", glow: "rgba(139,92,246,0.3)" },
+  { num: "03", icon: Network,    label: "Knowledge Graph",   desc: "Visualize how concepts, methods, datasets and researchers connect — drag nodes, explore connections.",   accent: "from-emerald-500 to-teal-400",  glow: "rgba(16,185,129,0.3)" },
+  { num: "04", icon: Lightbulb,  label: "Gap Discovery",     desc: "Identify white spaces in any research domain — the questions nobody has answered yet.",                  accent: "from-amber-500 to-yellow-400",  glow: "rgba(245,158,11,0.3)" },
+  { num: "05", icon: TrendingUp, label: "Trend Analytics",   desc: "Track emerging topics before they peak. Stay ahead of the curve in your field.",                        accent: "from-orange-500 to-red-400",    glow: "rgba(249,115,22,0.3)" },
+  { num: "06", icon: Users,      label: "Collaborate",       desc: "Connect with researchers working on adjacent problems. Build teams around shared interests.",            accent: "from-pink-500 to-rose-400",     glow: "rgba(236,72,153,0.3)" },
+];
+
+const STATS = [
+  { val: "280M+", label: "Scientific Papers" },
+  { val: "100+",  label: "Research Domains"  },
+  { val: "<1s",   label: "Query Latency"     },
 ];
 
 export default function Landing() {
   const [, setLocation] = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [query, setQuery] = useState("");
+  const [activeFeature, setActiveFeature] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -26,23 +34,46 @@ export default function Landing() {
     canvas.width = W;
     canvas.height = H;
 
-    const dots: { x: number; y: number; z: number }[] = Array.from({ length: 280 }, () => ({
+    const dots = Array.from({ length: 420 }, () => ({
       x: Math.random() * W - W / 2,
       y: Math.random() * H - H / 2,
       z: Math.random() * W,
+      hue: Math.random() > 0.75 ? 200 + Math.random() * 60 : 220,
     }));
 
+    const blobs = [
+      { x: 0.15, y: 0.25, r: 320, rgb: "20,10,80" },
+      { x: 0.88, y: 0.55, r: 260, rgb: "10,25,90" },
+      { x: 0.45, y: 0.90, r: 380, rgb: "50,10,70" },
+    ];
+
     const draw = () => {
-      ctx.fillStyle = "rgba(0,0,0,0.88)";
+      ctx.fillStyle = "#04040a";
       ctx.fillRect(0, 0, W, H);
+
+      blobs.forEach((b) => {
+        const gx = b.x * W, gy = b.y * H;
+        const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, b.r);
+        g.addColorStop(0, `rgba(${b.rgb},0.09)`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(gx, gy, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
       for (const d of dots) {
-        d.z -= 0.4;
-        if (d.z <= 0) { d.x = Math.random() * W - W / 2; d.y = Math.random() * H - H / 2; d.z = W; }
+        d.z -= 0.38;
+        if (d.z <= 0) {
+          d.x = Math.random() * W - W / 2;
+          d.y = Math.random() * H - H / 2;
+          d.z = W;
+        }
         const x = W / 2 + (d.x / d.z) * W;
         const y = H / 2 + (d.y / d.z) * H;
-        const s = Math.max(0.2, (1 - d.z / W) * 2);
+        const s = Math.max(0.15, (1 - d.z / W) * 2.6);
         const a = 0.2 + (1 - d.z / W) * 0.8;
-        ctx.fillStyle = `rgba(220,230,255,${a})`;
+        ctx.fillStyle = `hsla(${d.hue},55%,82%,${a})`;
         ctx.beginPath();
         ctx.arc(x, y, s, 0, Math.PI * 2);
         ctx.fill();
@@ -59,117 +90,209 @@ export default function Landing() {
     return () => { window.removeEventListener("resize", onResize); cancelAnimationFrame(animId); };
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLocation("/sign-up");
-  };
+  const af = FEATURES[activeFeature];
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden relative flex flex-col">
+    <div className="min-h-screen bg-[#04040a] text-white font-sans overflow-x-hidden relative">
       <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />
-      <div className="fixed inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 z-0 pointer-events-none" />
 
-      {/* Nav */}
-      <header className="relative z-20 flex items-center justify-between px-6 py-5 max-w-5xl mx-auto w-full">
+      {/* Vignette */}
+      <div className="fixed inset-0 z-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 90% 60% at 50% -5%, transparent 0%, rgba(4,4,10,0.55) 65%, #04040a 100%)" }} />
+
+      {/* ── Nav ── */}
+      <header className="relative z-20 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <img
-            src="/onyx-logo-transparent.png"
-            alt="ONYX"
-            className="w-10 h-10 object-contain"
-          />
+          <img src="/Onyx-logo.png" alt="Onyx" className="w-11 h-11 object-contain" />
           <div className="leading-none">
             <div className="font-black text-[17px] tracking-[0.12em] text-white">ONYX</div>
-            <div className="font-medium text-[9px] tracking-[0.22em] text-neutral-400 -mt-0.5 uppercase">research</div>
+            <div className="font-medium text-[9px] tracking-[0.22em] text-neutral-600 -mt-0.5">RESEARCH</div>
           </div>
         </div>
+        <nav className="hidden md:flex items-center gap-8">
+          {["Features", "Pricing", "About"].map((l) => (
+            <button key={l} className="text-sm text-neutral-500 hover:text-white transition-colors">{l}</button>
+          ))}
+        </nav>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setLocation("/sign-in")}
-            className="text-sm text-neutral-400 hover:text-white transition-colors px-4 py-2"
-          >
-            Sign In
+          <button onClick={() => setLocation("/sign-in")}
+            className="text-sm text-neutral-500 hover:text-white transition-colors px-4 py-2">
+            Sign in
           </button>
-          <button
-            onClick={() => setLocation("/sign-up")}
-            className="text-sm bg-white text-black font-bold px-5 py-2.5 rounded-xl hover:bg-neutral-100 transition-colors tracking-wide"
-          >
-            Get Started
+          <button onClick={() => setLocation("/sign-up")}
+            className="text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:brightness-110"
+            style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.14) 0%,rgba(255,255,255,0.05) 100%)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 0 24px rgba(100,120,255,0.15)" }}>
+            Start Free →
           </button>
         </div>
       </header>
 
-      {/* Hero */}
-      <main className="relative z-10 flex-1 flex flex-col max-w-5xl mx-auto px-6 pt-10 pb-16 w-full">
-        {/* Badge */}
-        <div className="mb-8">
-          <span className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-neutral-400 font-medium tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-            AI-Powered Research Intelligence
-          </span>
+      <main className="relative z-10 max-w-7xl mx-auto px-8">
+
+        {/* ── Badge ── */}
+        <div className="flex justify-center pt-14 mb-10">
+          <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full text-[11px] font-medium tracking-[0.2em] text-neutral-500"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(8px)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
+            AI-POWERED RESEARCH INTELLIGENCE
+          </div>
         </div>
 
-        {/* Headline */}
-        <div className="mb-8 max-w-2xl">
-          <h1 className="text-[clamp(2.6rem,8vw,4.8rem)] font-black leading-[1.02] tracking-tight mb-2">
-            <span className="text-neutral-400">Navigate the</span><br />
-            <span className="text-neutral-400">World of</span><br />
-            <span className="text-white">Research.</span>
+        {/* ── Hero headline ── */}
+        <div className="text-center mb-10 max-w-5xl mx-auto">
+          <h1 className="leading-[1.03] mb-7" style={{ fontWeight: 900 }}>
+            <span className="block" style={{
+              fontSize: "clamp(3rem,9vw,7.5rem)",
+              letterSpacing: "-0.035em",
+              background: "linear-gradient(175deg,#fff 0%,rgba(255,255,255,0.65) 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            }}>
+              Navigate the World
+            </span>
+            <span className="block" style={{
+              fontSize: "clamp(3rem,9vw,7.5rem)",
+              letterSpacing: "-0.035em",
+              background: "linear-gradient(175deg,#fff 20%,rgba(255,255,255,0.55) 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            }}>
+              of Research.
+            </span>
+            <span className="block mt-3" style={{
+              fontSize: "clamp(1.8rem,5.5vw,4.8rem)",
+              letterSpacing: "-0.025em",
+              background: "linear-gradient(160deg,rgba(150,165,255,0.95) 0%,rgba(100,120,200,0.45) 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            }}>
+              Discover What Matters.
+            </span>
           </h1>
-          <h2 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black leading-[1.05] tracking-tight text-neutral-500 mt-1">
-            Discover<br />What Matters.
-          </h2>
+          <p className="text-neutral-500 text-lg leading-relaxed max-w-[480px] mx-auto">
+            Synthesize 280M+ papers into clear answers, connected concepts, and unexplored opportunities.
+          </p>
         </div>
 
-        {/* Description */}
-        <p className="text-neutral-400 text-base mb-10 max-w-md leading-relaxed">
-          ONYX Research helps researchers discover, analyze, and synthesize
-          scientific knowledge across 100M+ papers.
-        </p>
+        {/* ── CTA ── */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-28">
+          <button onClick={() => setLocation("/sign-up")}
+            className="group flex items-center gap-2.5 font-semibold px-9 py-4 rounded-2xl text-sm transition-all hover:brightness-105"
+            style={{ background: "linear-gradient(135deg,#ffffff 0%,#e6eaff 100%)", color: "#07071a", boxShadow: "0 0 50px rgba(120,140,255,0.22),0 6px 28px rgba(0,0,0,0.45)" }}>
+            Start Research
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          </button>
+          <button onClick={() => setLocation("/sign-in")}
+            className="flex items-center gap-2 text-sm font-medium px-9 py-4 rounded-2xl text-neutral-500 hover:text-white transition-all"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(8px)" }}>
+            Already have an account <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
 
-        {/* Stat row */}
-        <div className="grid grid-cols-4 gap-3 mb-10 max-w-2xl">
-          {STAT_FEATURES.map(({ icon: Icon, label, sub }) => (
-            <div
-              key={label}
-              className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-2 hover:bg-white/8 hover:border-white/20 transition-all"
-            >
-              <div className="w-10 h-10 bg-white/8 border border-white/10 rounded-xl flex items-center justify-center">
-                <Icon className="w-4 h-4 text-neutral-300" />
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-bold text-white leading-tight">{label}</div>
-                <div className="text-[10px] text-neutral-500 leading-tight mt-0.5">{sub}</div>
-              </div>
+        {/* ── Stats — floating numbers, no boxes ── */}
+        <div className="flex items-center justify-center gap-20 mb-36 flex-wrap">
+          {STATS.map((s, i) => (
+            <div key={i} className="text-center">
+              <div className="font-black tracking-tight" style={{
+                fontSize: "clamp(2.4rem,5vw,3.8rem)",
+                background: "linear-gradient(175deg,#fff 0%,rgba(255,255,255,0.45) 100%)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              }}>{s.val}</div>
+              <div className="text-[11px] text-neutral-600 tracking-[0.22em] uppercase mt-1.5 font-medium">{s.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Search bar */}
-        <form
-          onSubmit={handleSearch}
-          className="flex items-center gap-3 max-w-2xl bg-white/5 border border-white/15 rounded-2xl px-5 py-3.5 focus-within:border-white/30 focus-within:bg-white/8 transition-all"
-        >
-          <Search className="w-4 h-4 text-neutral-500 flex-shrink-0" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm outline-none text-neutral-200 placeholder:text-neutral-600"
-            placeholder="Search papers, concepts, methods, data..."
-          />
-          <button
-            type="submit"
-            className="flex items-center gap-2 bg-white text-black text-sm font-bold px-5 py-2 rounded-xl hover:bg-neutral-100 transition-colors flex-shrink-0 tracking-wide"
-          >
-            Start Research
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </form>
-      </main>
+        {/* ── Features — interactive list + glass preview ── */}
+        <div className="max-w-6xl mx-auto mb-36">
+          <div className="text-center mb-16">
+            <p className="text-[11px] text-neutral-700 tracking-[0.28em] uppercase font-medium mb-3">Everything You Need</p>
+            <h2 className="font-black tracking-tight" style={{
+              fontSize: "clamp(1.8rem,4vw,3rem)",
+              background: "linear-gradient(175deg,#fff 0%,rgba(255,255,255,0.65) 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            }}>
+              One Platform. Every Tool.
+            </h2>
+          </div>
 
-      {/* Bottom note */}
-      <footer className="relative z-10 pb-6 text-center">
-        <p className="text-neutral-700 text-xs">© 2026 ONYX Research · onyxresearch.ai</p>
-      </footer>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
+            {/* Feature list */}
+            <div>
+              {FEATURES.map((f, i) => {
+                const Icon = f.icon;
+                const active = activeFeature === i;
+                return (
+                  <button key={f.num}
+                    onMouseEnter={() => setActiveFeature(i)}
+                    onClick={() => setActiveFeature(i)}
+                    className="w-full text-left flex items-start gap-5 px-6 py-6 transition-all border-b border-white/[0.04] last:border-0 group"
+                    style={active ? { background: "rgba(255,255,255,0.035)", backdropFilter: "blur(16px)" } : {}}>
+                    <div className="text-[11px] font-bold text-neutral-800 mt-1 tracking-widest w-6 flex-shrink-0">{f.num}</div>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${f.accent} transition-opacity`}
+                      style={{ opacity: active ? 1 : 0.35 }}>
+                      <Icon size={17} className="text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-semibold text-sm mb-0.5 transition-colors ${active ? "text-white" : "text-neutral-600 group-hover:text-neutral-400"}`}>
+                        {f.label}
+                      </div>
+                      <div className={`text-xs leading-relaxed transition-colors ${active ? "text-neutral-400" : "text-neutral-700"}`}>
+                        {f.desc}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Glass preview panel */}
+            <div className="hidden md:flex items-center justify-center pl-14">
+              <div className="w-full h-80 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg,rgba(255,255,255,0.055) 0%,rgba(255,255,255,0.018) 100%)",
+                  backdropFilter: "blur(24px)",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  boxShadow: `0 0 80px ${af.glow} inset, 0 24px 64px rgba(0,0,0,0.45)`,
+                  transition: "box-shadow 0.4s ease",
+                }}>
+                <div className={`absolute inset-0 bg-gradient-to-br ${af.accent} opacity-[0.07] blur-3xl transition-all duration-500`} />
+                <div className={`w-24 h-24 rounded-[28px] bg-gradient-to-br ${af.accent} flex items-center justify-center mb-6 relative`}
+                  style={{ boxShadow: `0 0 48px ${af.glow}`, transition: "all 0.3s ease" }}>
+                  {React.createElement(af.icon, { size: 42, className: "text-white" })}
+                </div>
+                <div className="font-black text-2xl text-white mb-2 relative tracking-tight">{af.label}</div>
+                <div className="text-sm text-neutral-500 max-w-[260px] text-center leading-relaxed relative">{af.desc}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Final CTA ── */}
+        <div className="text-center pb-24">
+          <div className="inline-block rounded-3xl px-14 py-14 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg,rgba(255,255,255,0.045) 0%,rgba(255,255,255,0.015) 100%)",
+              backdropFilter: "blur(24px)",
+              border: "1px solid rgba(255,255,255,0.065)",
+              boxShadow: "0 0 100px rgba(60,80,200,0.08) inset, 0 0 60px rgba(80,100,240,0.05)",
+            }}>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.04] to-violet-600/[0.04] pointer-events-none" />
+            <h2 className="font-black tracking-tight mb-2 relative" style={{
+              fontSize: "clamp(1.6rem,3vw,2.4rem)",
+              background: "linear-gradient(175deg,#fff 0%,rgba(255,255,255,0.65) 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            }}>
+              Ready to Navigate Science?
+            </h2>
+            <p className="text-neutral-600 text-sm mb-8 relative">Free forever. No credit card required.</p>
+            <button onClick={() => setLocation("/sign-up")}
+              className="group flex items-center gap-2.5 font-semibold px-10 py-4 rounded-2xl text-sm mx-auto relative hover:brightness-105 transition-all"
+              style={{ background: "linear-gradient(135deg,#ffffff 0%,#e6eaff 100%)", color: "#07071a", boxShadow: "0 0 40px rgba(120,140,255,0.2),0 6px 24px rgba(0,0,0,0.55)" }}>
+              Get Started Free
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+          <p className="text-neutral-800 text-xs mt-10">© 2025 Onyx Research · All rights reserved.</p>
+        </div>
+      </main>
     </div>
   );
 }
