@@ -1,19 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import MainLayout from "../components/MainLayout";
-import {
-  useSemanticSearch,
-  useGetTrendingSearches,
-  useGetCollections,
-  // TODO: verify this hook name against your generated @workspace/api-client-react.
-  // It should be whatever mutation adds a paper (by external id/url, since these
-  // come from ArXiv, not your own DB) to an existing collection. Common candidates
-  // in an orval/openapi-generated client: useAddPaperToCollection, useAddCollectionPaper,
-  // useCreateCollectionPaper. Swap the import + mutate() payload below to match.
-  useAddPaperToCollection,
-} from "@workspace/api-client-react";
+import { PaperCard } from "../components/PaperCard";
+import { PaperListPulse } from "../components/PulseLoader";
+import { useSemanticSearch, useGetTrendingSearches } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search,
   Sparkles,
@@ -22,10 +13,6 @@ import {
   TrendingUp,
   Users,
   ArrowRight,
-  ExternalLink,
-  BookOpen,
-  Bookmark,
-  Quote,
   X,
   Loader2,
   FileText,
@@ -34,21 +21,10 @@ import {
   ArrowUpDown,
   Command,
   Check,
-  FolderOpen,
-  CalendarDays,
 } from "lucide-react";
 
-const FALLBACK_TRENDING = [
-  "protein folding",
-  "CRISPR cancer",
-  "large language models",
-  "single-cell RNA",
-  "renewable energy",
-  "quantum computing",
-];
-
 const RECENT_KEY = "onyx:recent-searches";
-const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // Apple-style easeOutExpo
+const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 const modules = [
   {
@@ -112,8 +88,6 @@ const modules = [
     description: "Connect with researchers in the same field and manage research projects.",
   },
 ];
-
-// ---------- small helpers ----------
 
 function useRecentSearches() {
   const [recent, setRecent] = useState<string[]>([]);
@@ -186,12 +160,6 @@ function useRevealOnScroll<T extends HTMLElement>() {
   return { ref, visible };
 }
 
-function fmtDate(d?: string) {
-  return d ? new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) : null;
-}
-
-// ---------- subcomponents ----------
-
 function ModuleCard({ mod, index, onOpen }: { mod: (typeof modules)[number]; index: number; onOpen: () => void }) {
   const { ref, visible } = useRevealOnScroll<HTMLButtonElement>();
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -254,183 +222,6 @@ function ModuleCard({ mod, index, onOpen }: { mod: (typeof modules)[number]; ind
   );
 }
 
-function SaveMenu({
-  paper,
-  onSaved,
-}: {
-  paper: any;
-  onSaved: (collectionName: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const { data: collections, isLoading } = useGetCollections();
-  const addToCollection = useAddPaperToCollection();
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, [open]);
-
-  const handleAdd = (collectionId: string, collectionName: string) => {
-    // TODO: confirm payload shape — this assumes the mutation accepts the
-    // collection id plus enough of the paper to persist an external (ArXiv) result.
-    addToCollection.mutate(
-      {
-        collectionId,
-        data: {
-          title: paper.title,
-          authors: paper.authors,
-          url: paper.url,
-          pdfUrl: paper.pdfUrl,
-          abstract: paper.abstract,
-        },
-      } as any,
-      {
-        onSuccess: () => {
-          setOpen(false);
-          onSaved(collectionName);
-        },
-      }
-    );
-  };
-
-  return (
-    <div className="relative" ref={menuRef}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="true"
-        aria-expanded={open}
-        data-testid={`button-save-${paper.id}`}
-        className="flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-300 transition-colors active:scale-90"
-        style={{ transitionTimingFunction: EASE }}
-      >
-        <Bookmark className="w-3 h-3" />
-        Save
-      </button>
-
-      {open && (
-        <div
-          className="onyx-fade absolute right-0 bottom-full mb-2 w-56 rounded-xl p-1.5 z-20"
-          style={{
-            border: "1px solid rgba(255,255,255,0.1)",
-            background: "rgba(15,15,18,0.97)",
-            backdropFilter: "blur(14px)",
-            boxShadow: "0 12px 32px -8px rgba(0,0,0,0.5)",
-          }}
-        >
-          <div className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-500 uppercase tracking-wide">
-            Save to collection
-          </div>
-          {isLoading ? (
-            <div className="px-2.5 py-2 space-y-1.5">
-              <Skeleton className="h-6 w-full bg-white/6 rounded-lg" />
-              <Skeleton className="h-6 w-full bg-white/6 rounded-lg" />
-            </div>
-          ) : collections && collections.length > 0 ? (
-            collections.map((col) => (
-              <button
-                key={col.id}
-                onClick={() => handleAdd(col.id, col.name)}
-                disabled={addToCollection.isPending}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-xs text-neutral-300 rounded-lg hover:bg-white/6 transition-colors disabled:opacity-40"
-              >
-                <FolderOpen className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
-                <span className="truncate">{col.name}</span>
-              </button>
-            ))
-          ) : (
-            <div className="px-2.5 py-3 text-xs text-neutral-600">
-              No collections yet — create one on the Collections page first.
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ResultCard({ paper, index, onSaved }: { paper: any; index: number; onSaved: (name: string) => void }) {
-  const { ref, visible } = useRevealOnScroll<HTMLElement>();
-  const publishedDate = paper.publishedDate as string | undefined;
-  const arxivId = paper.arxivId as string | undefined;
-  const journal = paper.journal as string | undefined;
-
-  return (
-    <article
-      ref={ref}
-      data-testid={`card-paper-${paper.id}`}
-      className="flex gap-3 rounded-2xl p-4 group"
-      style={{
-        border: "1px solid rgba(255,255,255,0.06)",
-        background: "rgba(255,255,255,0.02)",
-        backdropFilter: "blur(10px)",
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(10px)",
-        transition: `opacity 0.5s ${EASE}, transform 0.5s ${EASE}, border-color 0.25s ${EASE}, background 0.25s ${EASE}`,
-        transitionDelay: visible ? `${Math.min(index, 6) * 45}ms` : "0ms",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "rgba(255,255,255,0.14)";
-        e.currentTarget.style.background = "rgba(255,255,255,0.035)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
-        e.currentTarget.style.background = "rgba(255,255,255,0.02)";
-      }}
-    >
-      <div className="w-9 h-9 rounded-xl bg-white/6 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <FileText className="w-4 h-4 text-neutral-500" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <a
-          href={paper.url ?? "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-sm font-semibold text-neutral-200 group-hover:text-sky-400 transition-colors leading-snug mb-0.5"
-        >
-          {paper.title}
-        </a>
-        <p className="text-xs text-neutral-600 mb-1.5">
-          {paper.authors?.slice(0, 3).join(", ")}{paper.authors?.length > 3 ? ", et al." : ""}
-          {publishedDate && <> · {fmtDate(publishedDate)}</>}
-          {journal && <> · <span className="italic">{journal}</span></>}
-        </p>
-        {paper.abstract && <p className="text-xs text-neutral-600 leading-relaxed line-clamp-2 mb-2">{paper.abstract}</p>}
-        <div className="flex items-center gap-3 flex-wrap">
-          {arxivId && (
-            <span className="flex items-center gap-1 text-xs text-neutral-600">
-              <BookOpen className="w-3 h-3" />
-              arXiv:{arxivId}
-            </span>
-          )}
-          {paper.pdfUrl && (
-            <a href={paper.pdfUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-sky-500 hover:text-sky-400 transition-colors">
-              <FileText className="w-3 h-3" />
-              PDF
-            </a>
-          )}
-          <div className="ml-auto flex items-center gap-3">
-            <SaveMenu paper={paper} onSaved={onSaved} />
-            <a
-              href={paper.url ?? "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Open paper in new tab"
-              className="flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-300 transition-colors"
-            >
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
 function Chip({
   children,
   onClick,
@@ -466,8 +257,6 @@ function Chip({
   );
 }
 
-// ---------- main component ----------
-
 export default function Home() {
   const [, setLocation] = useLocation();
   const [query, setQuery] = useState("");
@@ -482,11 +271,9 @@ export default function Home() {
   const { recent, push: pushRecent, remove: removeRecent, clear: clearRecent } = useRecentSearches();
 
   const searchMutation = useSemanticSearch();
-  const { data: trendingData } = useGetTrendingSearches();
-  const trending = trendingData && trendingData.length > 0 ? trendingData.slice(0, 6).map((t) => t.query) : FALLBACK_TRENDING;
+  const { data: trendingData, isLoading: trendingLoading } = useGetTrendingSearches();
+  const trending = trendingData?.slice(0, 6).map((t) => t.query) ?? [];
 
-  // Pick up ?q= for deep links (e.g. from the sitewide search shortcut). Note:
-  // Search.tsx doesn't currently read this param on its own — see the patch note.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get("q");
@@ -677,15 +464,26 @@ export default function Home() {
                 </div>
               </div>
             )}
+
             <div>
-              <p className="text-xs text-neutral-600 mb-2">Try popular searches</p>
-              <div className="flex flex-wrap gap-2">
-                {trending.map((t, i) => (
-                  <Chip key={t} testId={`chip-trending-${i}`} onClick={() => { setQuery(t); runSearch(t); }} icon={<Search className="w-3 h-3 text-neutral-600" />}>
-                    {t}
-                  </Chip>
-                ))}
-              </div>
+              <p className="text-xs text-neutral-600 mb-2">Trending searches</p>
+              {trendingLoading ? (
+                <div className="flex gap-2">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="h-7 w-24 rounded-full bg-white/4" style={{ animation: `onyx-fade-in 0.4s ${EASE} both`, animationDelay: `${i * 100}ms` }} />
+                  ))}
+                </div>
+              ) : trending.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {trending.map((t, i) => (
+                    <Chip key={t} testId={`chip-trending-${i}`} onClick={() => { setQuery(t); runSearch(t); }} icon={<Search className="w-3 h-3 text-neutral-600" />}>
+                      {t}
+                    </Chip>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-neutral-700">No trending searches right now — try searching for a topic to get started.</p>
+              )}
             </div>
           </div>
         )}
@@ -700,19 +498,8 @@ export default function Home() {
       )}
 
       {loading && (
-        <div className="relative z-10 max-w-2xl mx-auto px-6 md:px-8 space-y-3 mb-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="border border-white/6 rounded-2xl p-4 onyx-fade" style={{ animationDelay: `${i * 60}ms` }}>
-              <div className="flex gap-3">
-                <Skeleton className="w-9 h-9 rounded-lg flex-shrink-0 bg-white/6" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4 bg-white/6" />
-                  <Skeleton className="h-3 w-1/3 bg-white/4" />
-                  <Skeleton className="h-3 w-full bg-white/4" />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="relative z-10 max-w-2xl mx-auto px-6 md:px-8 mb-6">
+          <PaperListPulse count={3} />
         </div>
       )}
 
@@ -786,7 +573,7 @@ export default function Home() {
           ) : (
             <div className="space-y-3">
               {displayedResults.map((paper: any, i: number) => (
-                <ResultCard key={paper.id} paper={paper} index={i} onSaved={(name) => showToast(`Saved to "${name}"`)} />
+                <PaperCard key={paper.id} paper={paper} index={i} onSaved={(name) => showToast(`Saved to "${name}"`)} />
               ))}
             </div>
           )}
