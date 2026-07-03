@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { Search, Sparkles, Network, Lightbulb, TrendingUp, Users, ArrowRight, ChevronRight } from "lucide-react";
+import { Search, Sparkles, Network, Lightbulb, TrendingUp, Users, ArrowRight, ChevronRight, Menu, X } from "lucide-react";
 
 const FEATURES = [
   { num: "01", icon: Search,     label: "Semantic Search",   desc: "Find any paper across 280M+ sources using natural language — no Boolean syntax, no keyword guessing.", accent: "from-blue-500 to-cyan-400",    glow: "rgba(59,130,246,0.3)" },
@@ -17,16 +17,25 @@ const STATS = [
   { val: "<1s",   label: "Query Latency"     },
 ];
 
+const NAV_LINKS = [
+  { label: "Features", id: "features-section" },
+  { label: "Pricing", id: "pricing-section" },
+  { label: "About", id: "about-section" },
+];
+
 export default function Landing() {
   const [, setLocation] = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let animId: number;
     let W = window.innerWidth;
@@ -46,6 +55,43 @@ export default function Landing() {
       { x: 0.88, y: 0.55, r: 260, rgb: "10,25,90" },
       { x: 0.45, y: 0.90, r: 380, rgb: "50,10,70" },
     ];
+
+    const drawStatic = () => {
+      ctx.fillStyle = "#04040a";
+      ctx.fillRect(0, 0, W, H);
+      blobs.forEach((b) => {
+        const gx = b.x * W, gy = b.y * H;
+        const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, b.r);
+        g.addColorStop(0, `rgba(${b.rgb},0.09)`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(gx, gy, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      for (const d of dots) {
+        const x = W / 2 + (d.x / d.z) * W;
+        const y = H / 2 + (d.y / d.z) * H;
+        const s = Math.max(0.15, (1 - d.z / W) * 2.6);
+        const a = 0.2 + (1 - d.z / W) * 0.8;
+        ctx.fillStyle = `hsla(${d.hue},55%,82%,${a})`;
+        ctx.beginPath();
+        ctx.arc(x, y, s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    // Respect reduced-motion: paint a single static frame instead of animating forever.
+    if (prefersReducedMotion) {
+      drawStatic();
+      const onResize = () => {
+        W = window.innerWidth; H = window.innerHeight;
+        canvas.width = W; canvas.height = H;
+        drawStatic();
+      };
+      window.addEventListener("resize", onResize);
+      return () => window.removeEventListener("resize", onResize);
+    }
 
     const draw = () => {
       ctx.fillStyle = "#04040a";
@@ -92,16 +138,20 @@ export default function Landing() {
 
   const af = FEATURES[activeFeature];
 
+  const scrollToSection = (id: string) => {
+    setMobileNavOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div className="min-h-screen bg-[#04040a] text-white font-sans overflow-x-hidden relative">
       <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />
 
-      {/* Vignette */}
       <div className="fixed inset-0 z-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 90% 60% at 50% -5%, transparent 0%, rgba(4,4,10,0.55) 65%, #04040a 100%)" }} />
 
       {/* ── Nav ── */}
-      <header className="relative z-20 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+      <header className="relative z-30 flex items-center justify-between px-6 md:px-8 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
           <img src="/Onyx-logo.png" alt="Onyx" className="w-11 h-11 object-contain" />
           <div className="leading-none">
@@ -109,12 +159,20 @@ export default function Landing() {
             <div className="font-medium text-[9px] tracking-[0.22em] text-neutral-600 -mt-0.5">RESEARCH</div>
           </div>
         </div>
+
         <nav className="hidden md:flex items-center gap-8">
-          {["Features", "Pricing", "About"].map((l) => (
-            <button key={l} className="text-sm text-neutral-500 hover:text-white transition-colors">{l}</button>
+          {NAV_LINKS.map((l) => (
+            <button
+              key={l.label}
+              onClick={() => scrollToSection(l.id)}
+              className="text-sm text-neutral-500 hover:text-white transition-colors"
+            >
+              {l.label}
+            </button>
           ))}
         </nav>
-        <div className="flex items-center gap-3">
+
+        <div className="hidden md:flex items-center gap-3">
           <button onClick={() => setLocation("/sign-in")}
             className="text-sm text-neutral-500 hover:text-white transition-colors px-4 py-2">
             Sign in
@@ -125,12 +183,52 @@ export default function Landing() {
             Start Free →
           </button>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMobileNavOpen((v) => !v)}
+          aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileNavOpen}
+          className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </button>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-8">
+      {/* Mobile nav drawer */}
+      {mobileNavOpen && (
+        <div className="md:hidden relative z-30 mx-6 mb-4 rounded-2xl p-5"
+          style={{ background: "rgba(10,10,16,0.97)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <nav className="flex flex-col gap-1 mb-4">
+            {NAV_LINKS.map((l) => (
+              <button
+                key={l.label}
+                onClick={() => scrollToSection(l.id)}
+                className="text-left text-sm text-neutral-400 hover:text-white transition-colors py-2.5"
+              >
+                {l.label}
+              </button>
+            ))}
+          </nav>
+          <div className="flex flex-col gap-2 pt-3 border-t border-white/8">
+            <button onClick={() => setLocation("/sign-in")}
+              className="text-sm text-neutral-400 hover:text-white transition-colors py-2 text-left">
+              Sign in
+            </button>
+            <button onClick={() => setLocation("/sign-up")}
+              className="text-sm font-semibold px-5 py-3 rounded-xl text-center"
+              style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.14) 0%,rgba(255,255,255,0.05) 100%)", border: "1px solid rgba(255,255,255,0.18)" }}>
+              Start Free →
+            </button>
+          </div>
+        </div>
+      )}
+
+      <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
 
         {/* ── Badge ── */}
-        <div className="flex justify-center pt-14 mb-10">
+        <div className="flex justify-center pt-10 md:pt-14 mb-10">
           <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full text-[11px] font-medium tracking-[0.2em] text-neutral-500"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(8px)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
@@ -142,7 +240,7 @@ export default function Landing() {
         <div className="text-center mb-10 max-w-5xl mx-auto">
           <h1 className="leading-[1.03] mb-7" style={{ fontWeight: 900 }}>
             <span className="block" style={{
-              fontSize: "clamp(3rem,9vw,7.5rem)",
+              fontSize: "clamp(2.6rem,9vw,7.5rem)",
               letterSpacing: "-0.035em",
               background: "linear-gradient(175deg,#fff 0%,rgba(255,255,255,0.65) 100%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
@@ -150,7 +248,7 @@ export default function Landing() {
               Navigate the World
             </span>
             <span className="block" style={{
-              fontSize: "clamp(3rem,9vw,7.5rem)",
+              fontSize: "clamp(2.6rem,9vw,7.5rem)",
               letterSpacing: "-0.035em",
               background: "linear-gradient(175deg,#fff 20%,rgba(255,255,255,0.55) 100%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
@@ -158,7 +256,7 @@ export default function Landing() {
               of Research.
             </span>
             <span className="block mt-3" style={{
-              fontSize: "clamp(1.8rem,5.5vw,4.8rem)",
+              fontSize: "clamp(1.6rem,5.5vw,4.8rem)",
               letterSpacing: "-0.025em",
               background: "linear-gradient(160deg,rgba(150,165,255,0.95) 0%,rgba(100,120,200,0.45) 100%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
@@ -166,32 +264,32 @@ export default function Landing() {
               Discover What Matters.
             </span>
           </h1>
-          <p className="text-neutral-500 text-lg leading-relaxed max-w-[480px] mx-auto">
+          <p className="text-neutral-500 text-base md:text-lg leading-relaxed max-w-[480px] mx-auto">
             Synthesize 280M+ papers into clear answers, connected concepts, and unexplored opportunities.
           </p>
         </div>
 
         {/* ── CTA ── */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-28">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-20 md:mb-28">
           <button onClick={() => setLocation("/sign-up")}
-            className="group flex items-center gap-2.5 font-semibold px-9 py-4 rounded-2xl text-sm transition-all hover:brightness-105"
+            className="group flex items-center gap-2.5 font-semibold px-9 py-4 rounded-2xl text-sm transition-all hover:brightness-105 w-full sm:w-auto justify-center"
             style={{ background: "linear-gradient(135deg,#ffffff 0%,#e6eaff 100%)", color: "#07071a", boxShadow: "0 0 50px rgba(120,140,255,0.22),0 6px 28px rgba(0,0,0,0.45)" }}>
             Start Research
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
           </button>
           <button onClick={() => setLocation("/sign-in")}
-            className="flex items-center gap-2 text-sm font-medium px-9 py-4 rounded-2xl text-neutral-500 hover:text-white transition-all"
+            className="flex items-center gap-2 text-sm font-medium px-9 py-4 rounded-2xl text-neutral-500 hover:text-white transition-all w-full sm:w-auto justify-center"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(8px)" }}>
             Already have an account <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* ── Stats — floating numbers, no boxes ── */}
-        <div className="flex items-center justify-center gap-20 mb-36 flex-wrap">
+        {/* ── Stats ── */}
+        <div className="flex items-center justify-center gap-10 md:gap-20 mb-24 md:mb-36 flex-wrap">
           {STATS.map((s, i) => (
             <div key={i} className="text-center">
               <div className="font-black tracking-tight" style={{
-                fontSize: "clamp(2.4rem,5vw,3.8rem)",
+                fontSize: "clamp(2rem,5vw,3.8rem)",
                 background: "linear-gradient(175deg,#fff 0%,rgba(255,255,255,0.45) 100%)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               }}>{s.val}</div>
@@ -200,9 +298,9 @@ export default function Landing() {
           ))}
         </div>
 
-        {/* ── Features — interactive list + glass preview ── */}
-        <div className="max-w-6xl mx-auto mb-36">
-          <div className="text-center mb-16">
+        {/* ── Features ── */}
+        <div id="features-section" className="max-w-6xl mx-auto mb-24 md:mb-36 scroll-mt-24">
+          <div className="text-center mb-12 md:mb-16">
             <p className="text-[11px] text-neutral-700 tracking-[0.28em] uppercase font-medium mb-3">Everything You Need</p>
             <h2 className="font-black tracking-tight" style={{
               fontSize: "clamp(1.8rem,4vw,3rem)",
@@ -214,7 +312,6 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
-            {/* Feature list */}
             <div>
               {FEATURES.map((f, i) => {
                 const Icon = f.icon;
@@ -223,7 +320,7 @@ export default function Landing() {
                   <button key={f.num}
                     onMouseEnter={() => setActiveFeature(i)}
                     onClick={() => setActiveFeature(i)}
-                    className="w-full text-left flex items-start gap-5 px-6 py-6 transition-all border-b border-white/[0.04] last:border-0 group"
+                    className="w-full text-left flex items-start gap-5 px-4 md:px-6 py-6 transition-all border-b border-white/[0.04] last:border-0 group"
                     style={active ? { background: "rgba(255,255,255,0.035)", backdropFilter: "blur(16px)" } : {}}>
                     <div className="text-[11px] font-bold text-neutral-800 mt-1 tracking-widest w-6 flex-shrink-0">{f.num}</div>
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${f.accent} transition-opacity`}
@@ -238,12 +335,19 @@ export default function Landing() {
                         {f.desc}
                       </div>
                     </div>
+                    {/* Mobile-only preview, since the glass panel is hidden below md */}
+                    {active && (
+                      <div className="md:hidden flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
+                        style={{ background: f.glow }}>
+                        <Icon size={16} className="text-white" />
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
 
-            {/* Glass preview panel */}
+            {/* Glass preview panel — desktop only */}
             <div className="hidden md:flex items-center justify-center pl-14">
               <div className="w-full h-80 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden"
                 style={{
@@ -266,8 +370,8 @@ export default function Landing() {
         </div>
 
         {/* ── Final CTA ── */}
-        <div className="text-center pb-24">
-          <div className="inline-block rounded-3xl px-14 py-14 relative overflow-hidden"
+        <div id="pricing-section" className="text-center pb-16 scroll-mt-24">
+          <div className="inline-block rounded-3xl px-8 md:px-14 py-12 md:py-14 relative overflow-hidden w-full md:w-auto"
             style={{
               background: "linear-gradient(135deg,rgba(255,255,255,0.045) 0%,rgba(255,255,255,0.015) 100%)",
               backdropFilter: "blur(24px)",
@@ -290,7 +394,14 @@ export default function Landing() {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </button>
           </div>
-          <p className="text-neutral-800 text-xs mt-10">© 2025 Onyx Research · All rights reserved.</p>
+        </div>
+
+        <div id="about-section" className="text-center pb-24 scroll-mt-24">
+          <p className="text-neutral-600 text-sm max-w-md mx-auto leading-relaxed mb-6">
+            Onyx Research is built for people who read papers for a living — indexing 280M+ sources
+            so a literature review takes minutes, not weeks.
+          </p>
+          <p className="text-neutral-800 text-xs">© 2025 Onyx Research · All rights reserved.</p>
         </div>
       </main>
     </div>
